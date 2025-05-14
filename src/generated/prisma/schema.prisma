@@ -1,0 +1,124 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Cliente {
+  id        Int       @id @default(autoincrement())
+  nome      String
+  telefone  String
+  email     String
+  morada    String
+  tipo      String // "Particular" ou "Empresa"
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  servicos  Servico[]
+}
+
+model Equipamento {
+  id          Int       @id @default(autoincrement())
+  tipo        String
+  marca       String
+  modelo      String
+  numeroSerie String?
+  dataCompra  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  servicos    Servico[]
+}
+
+model Servico {
+  id                String    @id @default(uuid())
+  clienteId         Int
+  equipamentoId     Int
+  tipo              String // "Reparação", "Manutenção", "Instalação", etc.
+  descricaoProblema String
+  estado            String // "pendente", "em_progresso", "concluido", "cancelado", "aguarda_resposta"
+  dataEntrada       DateTime
+  dataDiagnostico   DateTime?
+  dataReparacao     DateTime?
+  tecnico           String?
+  garantia          Boolean   @default(false)
+  periodoGarantia   String?
+  notas             String?   @db.Text
+  valorTotal        Decimal?  @db.Decimal(10, 2)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  cliente     Cliente     @relation(fields: [clienteId], references: [id])
+  equipamento Equipamento @relation(fields: [equipamentoId], references: [id])
+  historico   Historico[]
+  fotos       Foto[]
+  pecas       Peca[]
+  maoDeObra   MaoDeObra?
+  deslocacao  Deslocacao?
+}
+
+model Historico {
+  id        Int      @id @default(autoincrement())
+  servicoId String
+  data      DateTime @default(now())
+  hora      String
+  acao      String
+  autor     String
+  createdAt DateTime @default(now())
+
+  servico Servico @relation(fields: [servicoId], references: [id])
+}
+
+model Foto {
+  id        Int      @id @default(autoincrement())
+  servicoId String
+  descricao String
+  url       String?
+  createdAt DateTime @default(now())
+
+  servico Servico @relation(fields: [servicoId], references: [id])
+}
+
+model Peca {
+  id            Int      @id @default(autoincrement())
+  servicoId     String
+  nome          String
+  quantidade    Int
+  precoUnitario Decimal  @db.Decimal(10, 2)
+  total         Decimal  @db.Decimal(10, 2)
+  createdAt     DateTime @default(now())
+
+  servico Servico @relation(fields: [servicoId], references: [id])
+}
+
+model MaoDeObra {
+  id        Int      @id @default(autoincrement())
+  servicoId String   @unique
+  horas     Decimal  @db.Decimal(10, 2)
+  valorHora Decimal  @db.Decimal(10, 2)
+  total     Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  servico Servico @relation(fields: [servicoId], references: [id])
+}
+
+model Deslocacao {
+  id        Int      @id @default(autoincrement())
+  servicoId String   @unique
+  km        Decimal  @db.Decimal(10, 2)
+  valorKm   Decimal  @db.Decimal(10, 2)
+  total     Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  servico Servico @relation(fields: [servicoId], references: [id])
+}
