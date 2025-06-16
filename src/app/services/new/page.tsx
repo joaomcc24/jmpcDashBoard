@@ -21,6 +21,7 @@ interface Client {
   nome: string
   telefone: string
   email: string
+  nif?: string
   morada: string
   tipo: string
 }
@@ -33,13 +34,12 @@ export default function NewServicePage() {
   // Estados para dados das APIs
   const [clients, setClients] = useState<Client[]>([])
 
-  // Técnicos hardcoded
   const technicians = [
     { id: "1", nome: "Diogo Cardoso" },
     { id: "2", nome: "Jorge Cardoso" },
   ]
 
-  // Tipos de equipamento 
+  // Tipos de equipamento hardcoded
   const equipmentTypes = [
     "Frigorífico",
     "Máquina de Lavar Roupa",
@@ -49,7 +49,20 @@ export default function NewServicePage() {
     "Fogão",
     "Placa",
     "Arca",
-    "Micro-ondas",
+  ]
+
+  // Marcas hardcoded
+  const equipmentBrands = [
+    "Samsung",
+    "LG",
+    "Bosch",
+    "Siemens",
+    "Whirlpool",
+    "Electrolux",
+    "Indesit",
+    "Hotpoint",
+    "Candy",
+    "Beko",
   ]
 
   // Estados para seleções
@@ -62,6 +75,7 @@ export default function NewServicePage() {
     nome: "",
     telefone: "",
     email: "",
+    nif: "",
     morada: "",
     tipo: "particular",
   })
@@ -76,6 +90,7 @@ export default function NewServicePage() {
     clienteId: "",
     // Dados do equipamento
     equipamentoTipo: "",
+    equipamentoMarca: "",
     equipamentoModelo: "",
     equipamentoNumeroSerie: "",
   })
@@ -119,7 +134,7 @@ export default function NewServicePage() {
         },
         body: JSON.stringify({
           tipo: formData.equipamentoTipo,
-          marca: "", // Pode ser vazio por agora
+          marca: formData.equipamentoMarca,
           modelo: formData.equipamentoModelo,
           numeroSerie: formData.equipamentoNumeroSerie,
         }),
@@ -216,6 +231,7 @@ export default function NewServicePage() {
           nome: "",
           telefone: "",
           email: "",
+          nif: "",
           morada: "",
           tipo: "particular",
         })
@@ -333,6 +349,15 @@ export default function NewServicePage() {
                                 />
                               </div>
                               <div className="space-y-2">
+                                <Label htmlFor="newClientNif">NIF</Label>
+                                <Input
+                                  id="newClientNif"
+                                  value={newClientData.nif}
+                                  onChange={(e) => setNewClientData((prev) => ({ ...prev, nif: e.target.value }))}
+                                  placeholder="123456789"
+                                />
+                              </div>
+                              <div className="space-y-2">
                                 <Label htmlFor="newClientAddress">Morada</Label>
                                 <Input
                                   id="newClientAddress"
@@ -369,6 +394,15 @@ export default function NewServicePage() {
                         </Dialog>
                       </div>
                     </div>
+
+                    {selectedClient && (
+                      <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <p className="font-medium text-blue-900">{selectedClient.nome}</p>
+                        <p className="text-sm text-blue-700">{selectedClient.telefone}</p>
+                        <p className="text-sm text-blue-700">{selectedClient.email}</p>
+                        {selectedClient.nif && <p className="text-sm text-blue-700">NIF: {selectedClient.nif}</p>}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -392,6 +426,22 @@ export default function NewServicePage() {
                           {equipmentTypes.map((type) => (
                             <SelectItem key={type} value={type}>
                               {type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="equipamentoMarca">Marca</Label>
+                      <Select onValueChange={(value) => handleInputChange("equipamentoMarca", value)} required>
+                        <SelectTrigger className="bg-white">
+                          <SelectValue placeholder="Selecione a marca" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border shadow-lg">
+                          {equipmentBrands.map((brand) => (
+                            <SelectItem key={brand} value={brand}>
+                              {brand}
                             </SelectItem>
                           ))}
                         </SelectContent>

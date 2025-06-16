@@ -17,9 +17,10 @@ model Cliente {
   id        Int       @id @default(autoincrement())
   nome      String
   telefone  String
-  email     String
+  email     String    @unique
+  nif       String?
   morada    String
-  tipo      String    // "Particular" ou "Empresa"
+  tipo      String    // "particular" ou "empresa"
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   servicos  Servico[]

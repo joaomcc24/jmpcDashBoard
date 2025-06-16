@@ -1,30 +1,44 @@
 import { NextResponse } from "next/server"
 import { PrismaClient } from "@prisma/client"
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient({
+  log: ["error"],
+})
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
+    console.log("=== INÍCIO ATUALIZAÇÃO CLIENTE API ===")
+
     const id = Number.parseInt(params.id)
     const body = await request.json()
 
-    // Validação básica
-    if (!body.nome?.trim()) {
+    console.log("ID do cliente:", id)
+    console.log("Dados recebidos:", JSON.stringify(body, null, 2))
+
+    // Validação e limpeza dos dados
+    const nome = body.nome?.toString().trim()
+    const telefone = body.telefone?.toString().trim()
+    const email = body.email?.toString().trim().toLowerCase()
+    const nif = body.nif?.toString().trim() || null
+    const morada = body.morada?.toString().trim() || ""
+    const tipo = body.tipo?.toString().trim() || "particular"
+
+    if (!nome) {
       return NextResponse.json({ error: "Nome é obrigatório" }, { status: 400 })
     }
 
-    if (!body.telefone?.trim()) {
+    if (!telefone) {
       return NextResponse.json({ error: "Telefone é obrigatório" }, { status: 400 })
     }
 
-    if (!body.email?.trim()) {
+    if (!email) {
       return NextResponse.json({ error: "Email é obrigatório" }, { status: 400 })
     }
 
     // Verificar se já existe outro cliente com o mesmo email
     const existingClient = await prisma.cliente.findFirst({
       where: {
-        email: body.email.trim().toLowerCase(),
+        email: email,
         NOT: {
           id: id,
         },
@@ -39,18 +53,38 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const client = await prisma.cliente.update({
       where: { id },
       data: {
-        nome: body.nome.trim(),
-        telefone: body.telefone.trim(),
-        email: body.email.trim().toLowerCase(),
-        morada: body.morada?.trim() || "",
-        tipo: body.tipo || "particular",
+        nome,
+        telefone,
+        email,
+        nif: nif || null,
+        morada,
+        tipo,
       },
     })
 
-    return NextResponse.json(client)
+    // Retornar dados limpos
+    const cleanClient = {
+      id: client.id,
+      nome: client.nome,
+      telefone: client.telefone,
+      email: client.email,
+      nif: client.nif,
+      morada: client.morada,
+      tipo: client.tipo,
+      createdAt: client.createdAt.toISOString(),
+    }
+
+    console.log("=== FIM ATUALIZAÇÃO CLIENTE API - SUCESSO ===")
+    return NextResponse.json(cleanClient)
   } catch (error) {
     console.error("Erro ao atualizar cliente:", error)
-    return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: "Erro interno do servidor",
+        details: process.env.NODE_ENV === "development" ? error?.message : undefined,
+      },
+      { status: 500 },
+    )
   }
 }
 

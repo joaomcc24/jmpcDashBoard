@@ -24,10 +24,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Tipo é obrigatório" }, { status: 400 })
     }
 
+    if (!body.marca?.trim()) {
+      return NextResponse.json({ error: "Marca é obrigatória" }, { status: 400 })
+    }
+
     const equipment = await prisma.equipamento.create({
       data: {
         tipo: body.tipo.trim(),
-        marca: body.marca?.trim() || "",
+        marca: body.marca.trim(),
         modelo: body.modelo?.trim() || "",
         numeroSerie: body.numeroSerie?.trim() || null,
         dataCompra: body.dataCompra ? new Date(body.dataCompra) : null,
