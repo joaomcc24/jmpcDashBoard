@@ -34,6 +34,7 @@ export default function NewServicePage() {
   // Estados para dados das APIs
   const [clients, setClients] = useState<Client[]>([])
 
+  // Técnicos hardcoded
   const technicians = [
     { id: "1", nome: "Diogo Cardoso" },
     { id: "2", nome: "Jorge Cardoso" },
@@ -100,7 +101,7 @@ export default function NewServicePage() {
     const fetchData = async () => {
       setLoadingData(true)
       try {
-        console.log("Buscando clientes...")
+        console.log("A procurar clientes...")
         const clientsRes = await fetch("/api/clients")
         console.log("Resposta da API clients:", clientsRes.status)
 
@@ -206,7 +207,7 @@ export default function NewServicePage() {
 
     setCreatingClient(true)
     try {
-      console.log("Enviando dados para API...")
+      console.log("A enviar dados para API...")
 
       const response = await fetch("/api/clients", {
         method: "POST",
@@ -223,9 +224,15 @@ export default function NewServicePage() {
 
       if (response.ok) {
         console.log("Cliente criado com sucesso!")
+
+        // Adicionar à lista de clientes
         setClients((prev) => [responseData, ...prev])
+
+        // Selecionar o cliente criado
         setSelectedClient(responseData)
         handleInputChange("clienteId", responseData.id.toString())
+
+        // Fechar dialog e limpar form
         setShowNewClientDialog(false)
         setNewClientData({
           nome: "",
@@ -235,6 +242,9 @@ export default function NewServicePage() {
           morada: "",
           tipo: "particular",
         })
+
+        // Mostrar mensagem de sucesso
+        alert(`Cliente "${responseData.nome}" criado e selecionado com sucesso!`)
       } else {
         console.error("Erro da API:", responseData)
         alert("Erro ao criar cliente: " + (responseData.error || "Erro desconhecido"))
@@ -254,7 +264,7 @@ export default function NewServicePage() {
         <Sidebar />
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <p className="mt-4 text-gray-600">Carregando dados...</p>
+          <p className="mt-4 text-gray-600">A carregar dados...</p>
         </div>
       </div>
     )
@@ -386,7 +396,7 @@ export default function NewServicePage() {
                                   Cancelar
                                 </Button>
                                 <Button type="button" onClick={handleCreateNewClient} disabled={creatingClient}>
-                                  {creatingClient ? "Criando..." : "Criar Cliente"}
+                                  {creatingClient ? "A criar..." : "Criar Cliente"}
                                 </Button>
                               </div>
                             </div>
@@ -600,7 +610,7 @@ export default function NewServicePage() {
               </Button>
               <Button type="submit" disabled={loading} className="gap-2">
                 <Save className="h-4 w-4" />
-                {loading ? "Criando..." : "Criar Serviço"}
+                {loading ? "A criar..." : "Criar Serviço"}
               </Button>
             </div>
           </form>

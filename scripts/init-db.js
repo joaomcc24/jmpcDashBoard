@@ -3,7 +3,7 @@ const { PrismaClient } = require("@prisma/client")
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log("🌱 Inicializando base de dados...")
+  console.log("🌱 A inicializar a base de dados...")
 
   // Criar alguns clientes de exemplo
   const cliente1 = await prisma.cliente.create({

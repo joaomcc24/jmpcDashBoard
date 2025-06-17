@@ -24,6 +24,7 @@ import {
 
 interface Client {
   id: number
+  clienteId: string
   nome: string
   telefone: string
   email: string
@@ -63,7 +64,7 @@ export default function ClientsPage() {
     setError(null)
 
     try {
-      console.log("A procurar clientes...")
+      console.log("A buscar clientes...")
       const response = await fetch("/api/clients", {
         method: "GET",
         headers: {
@@ -214,7 +215,8 @@ export default function ClientsPage() {
       (client.nome || "").toLowerCase().includes(searchLower) ||
       (client.telefone || "").includes(searchTerm) ||
       (client.email || "").toLowerCase().includes(searchLower) ||
-      (client.nif || "").includes(searchTerm)
+      (client.nif || "").includes(searchTerm) ||
+      (client.clienteId || "").toLowerCase().includes(searchLower)
 
     const matchesType = filterType === "all" || client.tipo === filterType
 
@@ -254,8 +256,11 @@ export default function ClientsPage() {
       <Sidebar />
 
       <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-6 shadow-sm">
+        {/* Header - ALTURA EXATA ALINHADA */}
+        <header
+          className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-6 shadow-sm"
+          style={{ minHeight: "64px", maxHeight: "64px" }}
+        >
           <div className="flex flex-1 items-center gap-2">
             <Users className="h-6 w-6 text-blue-600" />
             <h1 className="text-xl font-semibold text-gray-900">Gestão de Clientes</h1>
@@ -322,7 +327,7 @@ export default function ClientsPage() {
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
-                      placeholder="Pesquisar por nome, telefone, email ou NIF..."
+                      placeholder="Pesquisar por nome, telefone, email, NIF ou ID..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10 border-gray-200"
@@ -380,6 +385,11 @@ export default function ClientsPage() {
                               >
                                 {client.tipo}
                               </Badge>
+                              {client.clienteId && (
+                                <Badge variant="outline" className="text-blue-600 border-blue-200">
+                                  {client.clienteId}
+                                </Badge>
+                              )}
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
@@ -429,8 +439,8 @@ export default function ClientsPage() {
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Eliminar Cliente</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Tem a certeza que deseja eliminar o cliente "{client.nome}"? Esta ação não pode ser
-                                    desfeita.
+                                    Tem a certeza que deseja eliminar o cliente "{client.nome}" ({client.clienteId})?
+                                    Esta ação não pode ser desfeita.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>

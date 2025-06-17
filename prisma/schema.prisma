@@ -15,10 +15,11 @@ datasource db {
 
 model Cliente {
   id        Int       @id @default(autoincrement())
+  clienteId String    @unique @default("")  // ID personalizado CLT-001, CLT-002, etc.
   nome      String
-  telefone  String
+  telefone  String    @unique
   email     String    @unique
-  nif       String?
+  nif       String?   @unique
   morada    String
   tipo      String    // "particular" ou "empresa"
   createdAt DateTime  @default(now())
@@ -39,7 +40,8 @@ model Equipamento {
 }
 
 model Servico {
-  id               String        @id @default(uuid())
+  id               String        @id @default("")  // ID personalizado SRV-001, SRV-002, etc.
+  servicoId        String        @unique @default("")  // Campo adicional para garantir unicidade
   clienteId        Int
   equipamentoId    Int
   tipo             String        // "Reparação", "Manutenção", "Instalação", etc.

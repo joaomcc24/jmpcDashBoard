@@ -201,7 +201,7 @@ const fetchServiceData = async () => {
         <Sidebar />
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <p className="mt-4 text-gray-600">Carregando detalhes do serviço...</p>
+          <p className="mt-4 text-gray-600">A carregar detalhes do serviço...</p>
         </div>
       </div>
     )
@@ -223,10 +223,10 @@ const fetchServiceData = async () => {
       <div className="flex-1 flex flex-col">
       <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
           <Button 
-            variant="ghost" 
+            variant="outline" 
             size="sm" 
             onClick={() => router.back()}
-            className="gap-1"
+            className="gap-1 hover:bg-gray-700 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar

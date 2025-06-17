@@ -7,7 +7,7 @@ const prisma = new PrismaClient({
 
 export async function GET() {
   try {
-    console.log("=== Iniciando busca de clientes ===")
+    console.log("=== A iniciar busca de clientes ===")
 
     const clients = await prisma.cliente.findMany({
       orderBy: {
@@ -20,6 +20,7 @@ export async function GET() {
     // Garantir que os dados estão limpos
     const cleanClients = clients.map((client) => ({
       id: client.id,
+      clienteId: client.clienteId,
       nome: client.nome || "",
       telefone: client.telefone || "",
       email: client.email || "",
@@ -69,34 +70,53 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email é obrigatório" }, { status: 400 })
     }
 
-    // Verificar se já existe cliente com o mesmo email
-    console.log("Verificando se email já existe...")
-    try {
-      const existingClient = await prisma.cliente.findFirst({
-        where: {
-          email: email,
-        },
-      })
+    console.log("A verificar se existem duplicados...")
 
-      if (existingClient) {
-        console.log("Erro: Email já existe")
-        return NextResponse.json({ error: "Já existe um cliente com este email" }, { status: 400 })
-      }
-    } catch (dbError) {
-      console.error("Erro ao verificar email existente:", dbError)
-      return NextResponse.json({ error: "Erro de base de dados ao verificar email" }, { status: 500 })
+    // Verificar email
+    const existingEmail = await prisma.cliente.findFirst({
+      where: { email: email },
+    })
+    if (existingEmail) {
+      return NextResponse.json({ error: "Já existe um cliente com este email" }, { status: 400 })
     }
 
-    // Criar o cliente
-    console.log("Criando cliente na base de dados...")
+    // Verificar telefone
+    const existingPhone = await prisma.cliente.findFirst({
+      where: { telefone: telefone },
+    })
+    if (existingPhone) {
+      return NextResponse.json({ error: "Já existe um cliente com este número de telefone" }, { status: 400 })
+    }
+
+    // Verificar NIF (se fornecido)
+    if (nif) {
+      const existingNif = await prisma.cliente.findFirst({
+        where: { nif: nif },
+      })
+      if (existingNif) {
+        return NextResponse.json({ error: "Já existe um cliente com este NIF" }, { status: 400 })
+      }
+    }
+
+    // Gerar ID incremental para cliente
+    const lastClient = await prisma.cliente.findFirst({
+      orderBy: { id: "desc" },
+      select: { id: true },
+    })
+    const nextNumber = (lastClient?.id || 0) + 1
+    const clienteId = `CLT-${nextNumber.toString().padStart(3, "0")}`
+
+    console.log("A criar cliente na base de dados...")
+    console.log("ID do cliente gerado:", clienteId)
     let client
     try {
       client = await prisma.cliente.create({
         data: {
+          clienteId,
           nome,
           telefone,
           email,
-          nif: nif || null, // Garantir que é null se vazio
+          nif: nif || null,
           morada,
           tipo,
         },
@@ -107,7 +127,17 @@ export async function POST(request: Request) {
 
       // Verificar se é erro de constraint unique
       if (createError.code === "P2002") {
-        return NextResponse.json({ error: "Email já está em uso" }, { status: 400 })
+        const target = createError.meta?.target
+        if (target?.includes("email")) {
+          return NextResponse.json({ error: "Email já está em uso" }, { status: 400 })
+        }
+        if (target?.includes("telefone")) {
+          return NextResponse.json({ error: "Telefone já está em uso" }, { status: 400 })
+        }
+        if (target?.includes("nif")) {
+          return NextResponse.json({ error: "NIF já está em uso" }, { status: 400 })
+        }
+        return NextResponse.json({ error: "Dados duplicados encontrados" }, { status: 400 })
       }
 
       return NextResponse.json({ error: "Erro ao criar cliente na base de dados" }, { status: 500 })
@@ -116,6 +146,7 @@ export async function POST(request: Request) {
     // Retornar dados limpos
     const cleanClient = {
       id: client.id,
+      clienteId: client.clienteId,
       nome: client.nome,
       telefone: client.telefone,
       email: client.email,
