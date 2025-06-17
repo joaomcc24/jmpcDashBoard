@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useParams, usePathname, useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { 
   ArrowLeft, 
   Printer, 
@@ -13,10 +13,8 @@ import {
   Wrench, 
   FileText, 
   CheckCircle2, 
-  AlertCircle, 
   XCircle,
-  Image,
-  MessageSquare,
+  Image as ImageIcon,
   Edit,
   MoreVertical,
   PlusCircle
@@ -33,6 +31,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 
 interface ServiceData {
   id: string;
@@ -118,11 +117,10 @@ export default function DetalhesServicoPage() {
   const params = useParams()
   const router = useRouter()
   const serviceId = params.id
-  const pathname = usePathname()
-
   // Estado para controlar a edição de notas
   const [isEditingNotes, setIsEditingNotes] = useState(false)
   const [serviceNotes, setServiceNotes] = useState("O cliente reportou que o aparelho não liga. Após inspeção inicial, verificou-se que o compressor não está a funcionar. Foi solicitada a peça de substituição ao fornecedor.")
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
   
   const [serviceData, setServiceData] = useState<ServiceData | null>(null);
 
@@ -159,13 +157,10 @@ const fetchServiceData = async () => {
   } finally {
     setLoading(false);
   }
-};
-
-    if (serviceId) {
+};    if (serviceId) {
       fetchServiceData()
     }
-  }, [serviceId])
-
+  }, [serviceId, router])
   const handleSaveNotes = async () => {
     if (!serviceData) return
     
@@ -195,26 +190,35 @@ const fetchServiceData = async () => {
     }
   }
 
+  const handleCancelService = async () => {
+    if (!serviceData) return
+    
+    try {
+      const response = await fetch(`/api/services/${serviceId}`, {
+        method: 'DELETE',
+      })
+      
+      if (!response.ok) {
+        throw new Error('Erro ao cancelar serviço')
+      }
+      
+      // Redirecionar para a página de serviços após eliminar
+      router.push('/services')
+    } catch (error) {
+      console.error("Erro ao cancelar serviço:", error)
+      // Adicionar um toast de erro aqui
+    }
+  }
+
   if (loading || !serviceData) {
     return (
       <div className="flex min-h-screen">
         <Sidebar />
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <p className="mt-4 text-gray-600">A carregar detalhes do serviço...</p>
-        </div>
+          <p className="mt-4 text-gray-600">A carregar detalhes do serviço...</p>        </div>
       </div>
     )
-  }
-
-  const isActive = (path: string) => {
-    if (path === '/dashboard' && pathname === '/dashboard') {
-      return true
-    }
-    if (path !== '/dashboard' && pathname.startsWith(path)) {
-      return true
-    }
-    return false
   }
   
   return (
@@ -247,12 +251,16 @@ const fetchServiceData = async () => {
                 <Button variant="outline" size="sm">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              </DropdownMenuTrigger>              <DropdownMenuContent align="end">
                 <DropdownMenuItem>Editar Serviço</DropdownMenuItem>
                 <DropdownMenuItem>Enviar por Email</DropdownMenuItem>
                 <DropdownMenuItem>Marcar como Concluído</DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600">Cancelar Serviço</DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="text-red-600" 
+                  onClick={() => setShowCancelDialog(true)}
+                >
+                  Cancelar Serviço
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -539,7 +547,7 @@ const fetchServiceData = async () => {
                     {serviceData.fotos && serviceData.fotos.map((foto) => (
                       <div key={foto.id} className="group relative overflow-hidden rounded-md border">
                         <div className="aspect-video w-full bg-muted flex items-center justify-center">
-                          <Image className="h-8 w-8 text-muted-foreground" />
+                          <ImageIcon className="h-8 w-8 text-muted-foreground" />
                         </div>
                         <div className="p-2">
                           <p className="text-sm">{foto.descricao}</p>
@@ -682,10 +690,21 @@ const fetchServiceData = async () => {
                 </CardFooter>
               </Card>
             </TabsContent>
-            
-          </Tabs>
+              </Tabs>
         </main>
       </div>
+      
+      {/* Confirmation Dialog for Canceling Service */}
+      <ConfirmDialog
+        isOpen={showCancelDialog}
+        onClose={() => setShowCancelDialog(false)}
+        onConfirm={handleCancelService}
+        title="Cancelar Serviço"
+        description="Tem a certeza que pretende cancelar este serviço? Esta ação não pode ser desfeita e todos os dados associados serão permanentemente eliminados."
+        confirmText="Sim, Cancelar"
+        cancelText="Não, Manter"
+        variant="danger"
+      />
     </div>
   )
 }

@@ -62,7 +62,6 @@ export default function DashboardPage() {
             brandResponseServices: services.filter((s: any) => s.estado === SERVICE_STATES.BRAND_RESPONSE).length,
           })
 
-          // Pegar os 5 serviços mais recentes
           const recent = services
             .sort((a: any, b: any) => new Date(b.dataEntrada).getTime() - new Date(a.dataEntrada).getTime())
             .slice(0, 5)
@@ -246,10 +245,9 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between">
+              <Card className="border-0 shadow-sm">                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-lg font-semibold text-gray-900">Serviços Recentes</CardTitle>
-                  <Button variant="outline" size="sm" onClick={() => (window.location.href = "/services")}>
+                  <Button variant="outline" size="sm" className="hover:bg-gray-700 hover:text-white" onClick={() => (window.location.href = "/services")}>
                     Ver Todos
                   </Button>
                 </CardHeader>
@@ -261,10 +259,9 @@ export default function DashboardPage() {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {recentServices.map((service) => (
-                        <div
+                      {recentServices.map((service) => (                        <div
                           key={service.id}
-                          className="flex items-center p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                          className="flex items-center p-3 rounded-lg border border-gray-100 hover:bg-gray-100 hover:border-gray-200 transition-colors cursor-pointer"
                           onClick={() => (window.location.href = `/services/${service.id}`)}
                         >
                           {/* Conteúdo principal - flex-1 para ocupar espaço disponível */}
