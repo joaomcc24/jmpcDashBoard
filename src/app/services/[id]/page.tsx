@@ -17,7 +17,8 @@ import {
   Image as ImageIcon,
   Edit,
   MoreVertical,
-  PlusCircle
+  PlusCircle,
+  Trash2
 } from "lucide-react"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { Button } from "@/components/ui/button"
@@ -32,6 +33,9 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { AddPartDialog } from "@/components/ui/add-part-dialog"
+import { AddLaborDialog } from "@/components/ui/add-labor-dialog"
+import { AddTravelDialog } from "@/components/ui/add-travel-dialog"
 
 interface ServiceData {
   id: string;
@@ -159,8 +163,65 @@ const fetchServiceData = async () => {
   }
 };    if (serviceId) {
       fetchServiceData()
+    }  }, [serviceId, router])
+
+  const refreshServiceData = async () => {
+    if (!serviceId) return
+    
+    try {
+      const response = await fetch(`/api/services/${serviceId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setServiceData(data)
+        setServiceNotes(data.notas || "")
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar dados:", error)
     }
-  }, [serviceId, router])
+  }
+
+  const handleDeletePart = async (partId: number) => {
+    try {
+      const response = await fetch(`/api/services/${serviceId}/parts?partId=${partId}`, {
+        method: 'DELETE',
+      })
+      
+      if (response.ok) {
+        refreshServiceData()
+      }
+    } catch (error) {
+      console.error("Erro ao remover peça:", error)
+    }
+  }
+
+  const handleDeleteLabor = async () => {
+    try {
+      const response = await fetch(`/api/services/${serviceId}/labor`, {
+        method: 'DELETE',
+      })
+      
+      if (response.ok) {
+        refreshServiceData()
+      }
+    } catch (error) {
+      console.error("Erro ao remover mão de obra:", error)
+    }
+  }
+
+  const handleDeleteTravel = async () => {
+    try {
+      const response = await fetch(`/api/services/${serviceId}/travel`, {
+        method: 'DELETE',
+      })
+      
+      if (response.ok) {
+        refreshServiceData()
+      }
+    } catch (error) {
+      console.error("Erro ao remover deslocação:", error)
+    }
+  }
+
   const handleSaveNotes = async () => {
     if (!serviceData) return
     
@@ -289,10 +350,10 @@ const fetchServiceData = async () => {
             Fotos
           </TabsTrigger>
           <TabsTrigger 
-            value="fatura"
+            value="relatorio"
             className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 bg-transparent hover:bg-transparent focus:bg-transparent"
           >
-            Fatura
+            Relatório
           </TabsTrigger>
         </TabsList>   
             <TabsContent value="detalhes" className="space-y-6">
@@ -566,18 +627,23 @@ const fetchServiceData = async () => {
               </Card>
             </TabsContent>
             
-            <TabsContent value="fatura" className="space-y-6">
+            <TabsContent value="relatorio" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Detalhes da Fatura</CardTitle>
+                  <CardTitle className="text-lg">Detalhes do Relatório</CardTitle>
                   <CardDescription>
-                    Informações de faturação para este serviço
+                    Informações do relatório para este serviço
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Peças utilizadas */}
+                <CardContent className="space-y-6">                  {/* Peças utilizadas */}
                   <div>
-                    <h3 className="font-medium mb-3">Peças Utilizadas</h3>
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="font-medium">Peças Utilizadas</h3>
+                      <AddPartDialog 
+                        serviceId={serviceId as string} 
+                        onPartAdded={refreshServiceData} 
+                      />
+                    </div>
                     <div className="border rounded-md overflow-hidden">
                       <table className="w-full">
                         <thead>
@@ -586,6 +652,7 @@ const fetchServiceData = async () => {
                             <th className="text-center p-2 text-sm font-medium text-muted-foreground">Quantidade</th>
                             <th className="text-right p-2 px-4 text-sm font-medium text-muted-foreground">Preço Unitário</th>
                             <th className="text-right p-2 px-4 text-sm font-medium text-muted-foreground">Total</th>
+                            <th className="text-center p-2 text-sm font-medium text-muted-foreground">Ações</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -595,11 +662,21 @@ const fetchServiceData = async () => {
                               <td className="p-2 text-center">{peca.quantidade}</td>
                               <td className="p-2 px-4 text-right">{parseFloat(peca.precoUnitario).toFixed(2)} €</td>
                               <td className="p-2 px-4 text-right font-medium">{parseFloat(peca.total).toFixed(2)} €</td>
+                              <td className="p-2 text-center">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeletePart(peca.id)}
+                                  className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </td>
                             </tr>
                           ))}
                           {(!serviceData.pecas || serviceData.pecas.length === 0) && (
                             <tr>
-                              <td colSpan={4} className="p-4 text-center text-muted-foreground italic">
+                              <td colSpan={5} className="p-4 text-center text-muted-foreground italic">
                                 Nenhuma peça registada
                               </td>
                             </tr>
@@ -608,7 +685,7 @@ const fetchServiceData = async () => {
                         {serviceData.pecas && serviceData.pecas.length > 0 ? (
                         <tfoot className="bg-muted/30">
                           <tr>
-                            <td colSpan={3} className="p-2 px-4 text-right font-medium">
+                            <td colSpan={4} className="p-2 px-4 text-right font-medium">
                               Subtotal Peças:
                             </td>
                             <td className="p-2 px-4 text-right font-medium">
@@ -621,10 +698,28 @@ const fetchServiceData = async () => {
                     </div>
                   </div>
                   
-                  <div className="grid gap-6 md:grid-cols-2">
-                    {/* Mão de obra */}
+                  <div className="grid gap-6 md:grid-cols-2">                    {/* Mão de obra */}
                     <div>
-                      <h3 className="font-medium mb-3">Mão de Obra</h3>
+                      <div className="flex justify-between items-center mb-3">
+                        <h3 className="font-medium">Mão de Obra</h3>
+                        <div className="flex gap-2">
+                          <AddLaborDialog 
+                            serviceId={serviceId as string} 
+                            existingLabor={serviceData.maoDeObra}
+                            onLaborAdded={refreshServiceData} 
+                          />
+                          {serviceData.maoDeObra && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleDeleteLabor}
+                              className="h-9 w-9 p-0 hover:bg-red-100 hover:text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
                       {serviceData.maoDeObra ? (
                       <div className="border rounded-md p-4 space-y-4">
                         <div className="flex justify-between items-center">
@@ -644,10 +739,28 @@ const fetchServiceData = async () => {
                     ) : (
                       <p className="text-muted-foreground italic">Sem registos de mão de obra</p>
                     )}
-                    </div>
-                    {/* Deslocação */}
+                    </div>                    {/* Deslocação */}
                     <div>
-                      <h3 className="font-medium mb-3">Deslocação</h3>
+                      <div className="flex justify-between items-center mb-3">
+                        <h3 className="font-medium">Deslocação</h3>
+                        <div className="flex gap-2">
+                          <AddTravelDialog 
+                            serviceId={serviceId as string} 
+                            existingTravel={serviceData.deslocacao}
+                            onTravelAdded={refreshServiceData} 
+                          />
+                          {serviceData.deslocacao && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleDeleteTravel}
+                              className="h-9 w-9 p-0 hover:bg-red-100 hover:text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
                       {serviceData.deslocacao ? (
                         <div className="border rounded-md p-4 space-y-4">
                           <div className="flex justify-between items-center">
@@ -673,17 +786,19 @@ const fetchServiceData = async () => {
                   {/* Total */}
                   <div className="bg-muted/20 p-4 rounded-md">
                     <div className="flex justify-between items-center text-lg font-semibold">
-                      <span>Total da Fatura:</span>
+                      <span>Total do serviço:</span>
                       <span>{serviceData.valorTotal ? parseFloat(serviceData.valorTotal).toFixed(2) : "0.00"} €</span>
                     </div>
                   </div>
-                </CardContent>
-                <CardFooter className="border-t pt-4 flex justify-end gap-2">
-                  <Button variant="outline">
+                </CardContent>                <CardFooter className="border-t pt-4 flex justify-end gap-2">
+                  <Button 
+                    variant="outline"
+                    className="hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                  >
                     <Printer className="h-4 w-4 mr-2" />
-                    Imprimir Fatura
+                    Imprimir Relatório
                   </Button>
-                  <Button>
+                  <Button className="bg-gray-800 text-white hover:bg-gray-700">
                     <Mail className="h-4 w-4 mr-2" />
                     Enviar por Email
                   </Button>

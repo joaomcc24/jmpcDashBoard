@@ -83,10 +83,31 @@ export async function DELETE(
   const id = params.id
   
   try {
-    await prisma.servico.delete({
-      where: {
-        id: id,
-      }
+    await prisma.$transaction(async (tx) => {
+      // Delete related records in the correct order
+      await tx.historico.deleteMany({
+        where: { servicoId: id }
+      })
+      
+      await tx.foto.deleteMany({
+        where: { servicoId: id }
+      })
+      
+      await tx.peca.deleteMany({
+        where: { servicoId: id }
+      })
+      
+      await tx.maoDeObra.deleteMany({
+        where: { servicoId: id }
+      })
+      
+      await tx.deslocacao.deleteMany({
+        where: { servicoId: id }
+      })
+      
+      await tx.servico.delete({
+        where: { id: id }
+      })
     })
     
     return NextResponse.json({ message: "Serviço eliminado com sucesso" })
