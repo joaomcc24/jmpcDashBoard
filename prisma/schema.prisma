@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,13 +9,13 @@ datasource db {
 
 model Cliente {
   id        Int       @id @default(autoincrement())
-  clienteId String    @unique @default("")  // ID personalizado CLT-001, CLT-002, etc.
+  clienteId String    @unique @default("")
   nome      String
   telefone  String    @unique
   email     String    @unique
   nif       String?   @unique
   morada    String
-  tipo      String    // "particular" ou "empresa"
+  tipo      String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   servicos  Servico[]
@@ -40,31 +34,31 @@ model Equipamento {
 }
 
 model Servico {
-  id               String        @id @default("")  // ID personalizado SRV-001, SRV-002, etc.
-  servicoId        String        @unique @default("")  // Campo adicional para garantir unicidade
-  clienteId        Int
-  equipamentoId    Int
-  tipo             String        // "Reparação", "Manutenção", "Instalação", etc.
+  id                String      @id @default("")
+  servicoId         String      @unique @default("")
+  clienteId         Int
+  equipamentoId     Int
+  tipo              String
   descricaoProblema String
-  estado           String        // "pendente", "concluido", "resposta_marca", "aguarda_peca"
-  dataEntrada      DateTime
-  dataDiagnostico  DateTime?
-  dataReparacao    DateTime?
-  tecnico          String?
-  garantia         Boolean       @default(false)
-  periodoGarantia  String?
-  notas            String?       @db.Text
-  valorTotal       Decimal?      @db.Decimal(10, 2)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  
-  cliente          Cliente       @relation(fields: [clienteId], references: [id])
-  equipamento      Equipamento   @relation(fields: [equipamentoId], references: [id])
-  historico        Historico[]
-  fotos            Foto[]
-  pecas            Peca[]
-  maoDeObra        MaoDeObra?
-  deslocacao       Deslocacao?
+  estado            String
+  dataEntrada       DateTime
+  dataDiagnostico   DateTime?
+  dataReparacao     DateTime?
+  tecnico           String?
+  garantia          Boolean     @default(false)
+  dataCompra        DateTime?
+  documentoCompra   String?
+  notas             String?
+  valorTotal        Decimal?    @db.Decimal(10, 2)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  deslocacao        Deslocacao?
+  fotos             Foto[]
+  historico         Historico[]
+  maoDeObra         MaoDeObra?
+  pecas             Peca[]
+  cliente           Cliente     @relation(fields: [clienteId], references: [id])
+  equipamento       Equipamento @relation(fields: [equipamentoId], references: [id])
 }
 
 model Historico {
@@ -75,42 +69,39 @@ model Historico {
   acao      String
   autor     String
   createdAt DateTime @default(now())
-  
   servico   Servico  @relation(fields: [servicoId], references: [id])
 }
 
 model Foto {
-  id          Int      @id @default(autoincrement())
-  servicoId   String
-  descricao   String
-  url         String?
-  createdAt   DateTime @default(now())
-  
-  servico     Servico  @relation(fields: [servicoId], references: [id])
+  id        Int      @id @default(autoincrement())
+  servicoId String
+  descricao String
+  url       String?
+  createdAt DateTime @default(now())
+  servico   Servico  @relation(fields: [servicoId], references: [id])
 }
 
 model Peca {
   id            Int      @id @default(autoincrement())
   servicoId     String
+  codigo        String
   nome          String
   quantidade    Int
   precoUnitario Decimal  @db.Decimal(10, 2)
   total         Decimal  @db.Decimal(10, 2)
   createdAt     DateTime @default(now())
-  
   servico       Servico  @relation(fields: [servicoId], references: [id])
 }
 
 model MaoDeObra {
-  id         Int      @id @default(autoincrement())
-  servicoId  String   @unique
-  horas      Decimal  @db.Decimal(10, 2)
-  valorHora  Decimal  @db.Decimal(10, 2)
-  total      Decimal  @db.Decimal(10, 2)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  
-  servico    Servico  @relation(fields: [servicoId], references: [id])
+  id        Int      @id @default(autoincrement())
+  servicoId String   @unique
+  horas     Decimal  @db.Decimal(10, 2)
+  valorHora Decimal  @db.Decimal(10, 2)
+  total     Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  servico   Servico  @relation(fields: [servicoId], references: [id])
 }
 
 model Deslocacao {
@@ -121,6 +112,16 @@ model Deslocacao {
   total     Decimal  @db.Decimal(10, 2)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
   servico   Servico  @relation(fields: [servicoId], references: [id])
+}
+
+// Modelo para autenticação
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // Hash da password com bcrypt
+  name      String
+  role      String   @default("admin") // Para futuras expansões
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

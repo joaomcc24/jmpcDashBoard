@@ -4,24 +4,26 @@ import prisma from "@/lib/prisma"
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const serviceId = params.id
-
+  const { id: serviceId } = await params
   try {
     const body = await request.json()
-    const { nome, quantidade, precoUnitario } = body
+    const { codigo, nome, quantidade, precoUnitario } = body
 
-    if (!nome || !quantidade || !precoUnitario) {
+    if (!codigo || !nome || !quantidade || !precoUnitario) {
       return NextResponse.json(
-        { error: "Todos os campos são obrigatórios: nome, quantidade, precoUnitario" },
+        { error: "Todos os campos são obrigatórios: codigo, nome, quantidade, precoUnitario" },
         { status: 400 }
       )
     }
 
-    const total = parseFloat(quantidade) * parseFloat(precoUnitario)    const newPart = await prisma.peca.create({
+    const total = parseFloat(quantidade) * parseFloat(precoUnitario)
+
+    const newPart = await prisma.peca.create({
       data: {
         servicoId: serviceId,
+        codigo,
         nome,
         quantidade: parseInt(quantidade),
         precoUnitario: parseFloat(precoUnitario),
@@ -44,9 +46,9 @@ export async function POST(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const serviceId = params.id
+  const { id: serviceId } = await params
   const { searchParams } = new URL(request.url)
   const partId = searchParams.get('partId')
 

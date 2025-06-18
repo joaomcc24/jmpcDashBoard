@@ -4,9 +4,9 @@ import prisma from "@/lib/prisma"
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const serviceId = params.id
+  const { id: serviceId } = await params
 
   try {
     const body = await request.json()
@@ -51,9 +51,9 @@ export async function POST(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const serviceId = params.id
+  const { id: serviceId } = await params
 
   try {
     await prisma.deslocacao.delete({

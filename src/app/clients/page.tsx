@@ -265,7 +265,7 @@ export default function ClientsPage() {
             <Users className="h-6 w-6 text-blue-600" />
             <h1 className="text-xl font-semibold text-gray-900">Gestão de Clientes</h1>
           </div>
-          <Button onClick={openNewClientDialog} className="gap-2 bg-blue-600 hover:bg-blue-700">
+          <Button onClick={openNewClientDialog} className="gap-2 bg-gray-800 text-white hover:bg-gray-700 hover:text-white">
             <Plus className="h-4 w-4" />
             Novo Cliente
           </Button>
@@ -419,19 +419,24 @@ export default function ClientsPage() {
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2 ml-4">
-                            <Button
+                          <div className="flex items-center gap-2 ml-4">                            <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleEditClient(client)}
-                              className="h-8 w-8 p-0"
+                              className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                              title="Editar cliente"
                             >
                               <Edit className="h-3 w-3" />
                             </Button>
 
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                  title="Eliminar cliente"
+                                >
                                   <Trash2 className="h-3 w-3" />
                                 </Button>
                               </AlertDialogTrigger>

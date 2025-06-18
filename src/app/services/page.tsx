@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Plus, Search, Wrench, User, Calendar, Clock, CheckCircle, AlertCircle, Package } from "lucide-react"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { Button } from "@/components/ui/button"
@@ -32,6 +33,7 @@ interface Service {
 }
 
 export default function ServicesPage() {
+  const router = useRouter()
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -60,8 +62,11 @@ export default function ServicesPage() {
       console.error("Erro ao carregar serviços:", error)
       setError("Erro de conexão")
     } finally {
-      setLoading(false)
-    }
+      setLoading(false)    }
+  }
+
+  const handleCreateNewService = () => {
+    router.push('/services/new')
   }
 
   // Filtrar serviços
@@ -134,8 +139,10 @@ export default function ServicesPage() {
           <div className="flex flex-1 items-center gap-2">
             <Wrench className="h-6 w-6 text-blue-600" />
             <h1 className="text-xl font-semibold text-gray-900">Gestão de Serviços</h1>
-          </div>
-          <Button href="/services/new" className="gap-2 bg-gray-800 text-white hover:bg-gray-700 hover:text-white">
+          </div>          <Button 
+            onClick={handleCreateNewService}
+            className="gap-2 bg-gray-800 text-white hover:bg-gray-700 hover:text-white"
+          >
             <Plus className="h-4 w-4" />
             Novo Serviço
           </Button>
@@ -267,9 +274,8 @@ export default function ServicesPage() {
                       {searchTerm || filterState !== "all" || filterType !== "all"
                         ? "Tente ajustar os filtros de pesquisa"
                         : "Comece a criar o seu primeiro serviço"}
-                    </p>
-                    {!searchTerm && filterState === "all" && filterType === "all" && (
-                      <Button href="/services/new" className="gap-2">
+                    </p>                    {!searchTerm && filterState === "all" && filterType === "all" && (
+                      <Button onClick={handleCreateNewService} className="gap-2">
                         <Plus className="h-4 w-4" />
                         Criar Primeiro Serviço
                       </Button>
@@ -334,6 +340,7 @@ export default function ServicesPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => (window.location.href = `/services/${service.id}`)}
+                              className="gap-2 bg-gray-800 text-white hover:bg-gray-700 hover:text-white"
                             >
                               Ver Detalhes
                             </Button>

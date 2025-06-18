@@ -1,11 +1,14 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { Settings, User, Shield, Database, Bell, Palette, Globe, HelpCircle } from "lucide-react"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
 export default function SettingsPage() {
+  const router = useRouter()
+  
   const settingsCategories = [
     {
       title: "Perfil",
@@ -13,6 +16,8 @@ export default function SettingsPage() {
       icon: User,
       color: "bg-blue-100 text-blue-600",
       items: ["Informações pessoais", "Alterar palavra-passe", "Preferências"],
+      route: "/settings/profile",
+      available: true
     },
     {
       title: "Segurança",
@@ -20,6 +25,8 @@ export default function SettingsPage() {
       icon: Shield,
       color: "bg-green-100 text-green-600",
       items: ["Autenticação", "Sessões ativas", "Logs de acesso"],
+      route: "/settings/security",
+      available: true
     },
     {
       title: "Base de Dados",
@@ -27,6 +34,8 @@ export default function SettingsPage() {
       icon: Database,
       color: "bg-purple-100 text-purple-600",
       items: ["Backup", "Importar/Exportar", "Limpeza de dados"],
+      route: "/settings/database",
+      available: true
     },
     {
       title: "Notificações",
@@ -34,6 +43,8 @@ export default function SettingsPage() {
       icon: Bell,
       color: "bg-yellow-100 text-yellow-600",
       items: ["Email", "Push notifications", "Lembretes"],
+      route: "/settings/notifications",
+      available: true
     },
     {
       title: "Aparência",
@@ -41,6 +52,8 @@ export default function SettingsPage() {
       icon: Palette,
       color: "bg-pink-100 text-pink-600",
       items: ["Tema", "Cores", "Layout"],
+      route: "/settings/appearance",
+      available: true
     },
     {
       title: "Sistema",
@@ -48,6 +61,8 @@ export default function SettingsPage() {
       icon: Globe,
       color: "bg-indigo-100 text-indigo-600",
       items: ["Idioma", "Fuso horário", "Formato de data"],
+      route: "/settings/system",
+      available: true
     },
   ]
 
@@ -70,12 +85,16 @@ export default function SettingsPage() {
             <div className="bg-gradient-to-r from-gray-600 to-gray-700 rounded-lg p-6 text-white">
               <h2 className="text-2xl font-bold mb-2">Configurações do Sistema</h2>
               <p className="text-gray-100">Personalize e configure o sistema JMPC de acordo com as suas necessidades</p>
-            </div>
-
-            {/* Categorias de Definições */}
+            </div>            {/* Categorias de Definições */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {settingsCategories.map((category) => (
-                <Card key={category.title} className="border-0 shadow-sm hover:shadow-md transition-shadow">
+                <Card 
+                  key={category.title} 
+                  className={`border-0 shadow-sm transition-shadow cursor-pointer ${
+                    category.available ? 'hover:shadow-md' : 'opacity-50 cursor-not-allowed'
+                  }`}
+                  onClick={() => category.available && router.push(category.route)}
+                >
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3 mb-2">
                       <div className={`p-2 rounded-lg ${category.color}`}>
@@ -94,8 +113,17 @@ export default function SettingsPage() {
                         </div>
                       ))}
                     </div>
-                    <Button variant="outline" size="sm" className="w-full" disabled>
-                      Em breve
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full" 
+                      disabled={!category.available}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (category.available) router.push(category.route)
+                      }}
+                    >
+                      {category.available ? "Configurar" : "Em breve"}
                     </Button>
                   </CardContent>
                 </Card>

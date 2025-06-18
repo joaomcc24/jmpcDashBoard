@@ -85,10 +85,10 @@ async function main() {
       estado: "concluido",
       dataEntrada: new Date("2023-06-10"),
       dataDiagnostico: new Date("2023-06-11"),
-      dataReparacao: new Date("2023-06-15"),
-      tecnico: "António Ferreira",
+      dataReparacao: new Date("2023-06-15"),      tecnico: "António Ferreira",
       garantia: true,
-      periodoGarantia: "3 meses",
+      dataCompra: new Date("2023-03-10"),
+      documentoCompra: "Fatura FT-2023/001",
       notas: "O cliente reportou que o aparelho não liga. Após inspeção inicial, verificou-se que o compressor não está a funcionar. Foi solicitada a peça de substituição ao fornecedor.",
       valorTotal: 194.00
     }
@@ -134,12 +134,12 @@ async function main() {
       }
     ]
   })
-
   // Adicionar peças ao serviço 1
   await prisma.peca.createMany({
     data: [
       {
         servicoId: servico1.id,
+        codigo: "COMP001",
         nome: "Compressor Frigorífico Samsung",
         quantidade: 1,
         precoUnitario: 85.00,
@@ -147,6 +147,7 @@ async function main() {
       },
       {
         servicoId: servico1.id,
+        codigo: "FLT002",
         nome: "Filtro de gás",
         quantidade: 1,
         precoUnitario: 12.50,
@@ -186,10 +187,10 @@ async function main() {
       descricaoProblema: "Faz muito barulho e vibra excessivamente",
       estado: "pendente",
       dataEntrada: new Date("2023-06-14"),
-      dataDiagnostico: new Date("2023-06-14"),
-      tecnico: "Carlos Mendes",
+      dataDiagnostico: new Date("2023-06-14"),      tecnico: "Carlos Mendes",
       garantia: true,
-      periodoGarantia: "6 meses",
+      dataCompra: new Date("2022-12-14"),
+      documentoCompra: "Recibo REC-2022/045", 
       notas: "Cliente reportou ruído excessivo durante a centrifugação. Verificação inicial indica problema nos rolamentos do tambor."
     }
   })
@@ -203,10 +204,10 @@ async function main() {
       tipo: "Instalação",
       descricaoProblema: "Instalação de nova máquina",
       estado: "aguarda_peca",
-      dataEntrada: new Date("2023-06-18"),
-      tecnico: "António Ferreira",
+      dataEntrada: new Date("2023-06-18"),      tecnico: "António Ferreira",
       garantia: true,
-      periodoGarantia: "24 meses",
+      dataCompra: new Date("2023-06-18"),
+      documentoCompra: null,
       notas: "Cliente solicitou instalação de máquina nova e remoção da antiga."
     }
   })

@@ -2,8 +2,9 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Users, Wrench, Package, Settings, FileText } from "lucide-react"
+import { Home, Users, Wrench, Package, Settings, FileText, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { signOut } from "next-auth/react"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -15,6 +16,10 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname()
+
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/login' })
+  }
 
   return (
     <div className="w-64 flex-shrink-0 border-r bg-muted/40 flex flex-col">
@@ -55,12 +60,19 @@ export function Sidebar() {
             </Link>
           )
         })}
-      </nav>
-
-      {/* Footer */}
+      </nav>      {/* Footer */}
       <div className="px-3 py-4">
         <div className="border-t border-gray-700 pt-4">
-          <p className="px-3 text-xs text-gray-400">JMPC v1.0</p>
+          <button
+            onClick={handleLogout}
+            className="group flex w-full items-center px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-red-700 hover:text-white text-gray-400"
+          >
+            <LogOut className="mr-3 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-white" />
+            Logout
+          </button>
+          <div className="mt-3">
+            <p className="px-3 text-xs text-gray-400">JMPC v1.0</p>
+          </div>
         </div>
       </div>
     </div>

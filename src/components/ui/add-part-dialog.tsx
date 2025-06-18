@@ -20,10 +20,10 @@ interface AddPartDialogProps {
   onPartAdded: () => void
 }
 
-export function AddPartDialog({ serviceId, onPartAdded }: AddPartDialogProps) {
-  const [isOpen, setIsOpen] = useState(false)
+export function AddPartDialog({ serviceId, onPartAdded }: AddPartDialogProps) {  const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
+    codigo: "",
     nome: "",
     quantidade: "",
     precoUnitario: "",
@@ -46,7 +46,7 @@ export function AddPartDialog({ serviceId, onPartAdded }: AddPartDialogProps) {
         throw new Error("Erro ao adicionar peça")
       }
 
-      setFormData({ nome: "", quantidade: "", precoUnitario: "" })
+      setFormData({ codigo: "", nome: "", quantidade: "", precoUnitario: "" })
       setIsOpen(false)
       onPartAdded()
     } catch (error) {
@@ -86,8 +86,17 @@ export function AddPartDialog({ serviceId, onPartAdded }: AddPartDialogProps) {
           <DialogDescription>
             Adicione uma nova peça ao serviço. Todos os campos são obrigatórios.
           </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        </DialogHeader>        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="codigo">Código da Peça</Label>
+            <Input
+              id="codigo"
+              placeholder="Ex: PCA001, FLT025, etc."
+              value={formData.codigo}
+              onChange={(e) => handleInputChange("codigo", e.target.value)}
+              required
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="nome">Descrição da Peça</Label>
             <Input

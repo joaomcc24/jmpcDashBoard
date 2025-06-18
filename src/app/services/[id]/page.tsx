@@ -18,7 +18,8 @@ import {
   Edit,
   MoreVertical,
   PlusCircle,
-  Trash2
+  Trash2,
+  ChevronDown
 } from "lucide-react"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { Button } from "@/components/ui/button"
@@ -36,6 +37,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { AddPartDialog } from "@/components/ui/add-part-dialog"
 import { AddLaborDialog } from "@/components/ui/add-labor-dialog"
 import { AddTravelDialog } from "@/components/ui/add-travel-dialog"
+import { PrintReport } from "@/components/ui/print-report"
 
 interface ServiceData {
   id: string;
@@ -84,10 +86,10 @@ interface ServiceData {
     descricao: string;
     url: string | null;
     createdAt: string;
-  }>;
-  pecas: Array<{
+  }>;  pecas: Array<{
     id: number;
     servicoId: string;
+    codigo: string;
     nome: string;
     quantidade: number;
     precoUnitario: string; // Decimal vem como string
@@ -120,11 +122,11 @@ interface ServiceData {
 export default function DetalhesServicoPage() {
   const params = useParams()
   const router = useRouter()
-  const serviceId = params.id
-  // Estado para controlar a edição de notas
+  const serviceId = params.id  // Estado para controlar a edição de notas
   const [isEditingNotes, setIsEditingNotes] = useState(false)
   const [serviceNotes, setServiceNotes] = useState("O cliente reportou que o aparelho não liga. Após inspeção inicial, verificou-se que o compressor não está a funcionar. Foi solicitada a peça de substituição ao fornecedor.")
   const [showCancelDialog, setShowCancelDialog] = useState(false)
+  const [isChangingStatus, setIsChangingStatus] = useState(false)
   
   const [serviceData, setServiceData] = useState<ServiceData | null>(null);
 
@@ -164,6 +166,8 @@ const fetchServiceData = async () => {
 };    if (serviceId) {
       fetchServiceData()
     }  }, [serviceId, router])
+
+  const { handlePrint } = PrintReport({ serviceData: serviceData! })
 
   const refreshServiceData = async () => {
     if (!serviceId) return
@@ -250,7 +254,6 @@ const fetchServiceData = async () => {
       //  Adicionar um toast(?) de erro aqui
     }
   }
-
   const handleCancelService = async () => {
     if (!serviceData) return
     
@@ -268,6 +271,44 @@ const fetchServiceData = async () => {
     } catch (error) {
       console.error("Erro ao cancelar serviço:", error)
       // Adicionar um toast de erro aqui
+    }
+  }
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!serviceData || isChangingStatus) return
+    
+    setIsChangingStatus(true)
+    try {
+      console.log(`Alterando estado de ${serviceData.estado} para ${newStatus}`)
+      
+      const response = await fetch(`/api/services/${serviceId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          estado: newStatus
+        }),
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.text()
+        console.error('Erro na resposta:', errorData)
+        throw new Error(`Erro ao atualizar estado: ${response.status}`)
+      }
+      
+      const updatedService = await response.json()
+      console.log('Serviço atualizado:', updatedService)
+      
+      // Atualizar o estado local
+      setServiceData(prev => prev ? { ...prev, estado: newStatus } : null)
+      
+      alert(`Estado alterado para: ${newStatus}`)
+    } catch (error) {
+      console.error("Erro ao alterar estado:", error)
+      alert("Erro ao alterar estado do serviço")
+    } finally {
+      setIsChangingStatus(false)
     }
   }
 
@@ -295,27 +336,86 @@ const fetchServiceData = async () => {
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar
-          </Button>
-          <div className="flex flex-1 items-center gap-2">
+          </Button>          <div className="flex flex-1 items-center gap-3">
             <h1 className="text-lg font-semibold">
               Folha de Serviço {serviceData.id}
             </h1>
-            <StatusBadge status={serviceData.estado} />
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-1">
+            <div className="flex items-center gap-2">
+              <StatusBadge status={serviceData.estado} />
+              
+              {/* Dropdown para mudança de estado - mais elegante */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    disabled={isChangingStatus}
+                    className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-full"
+                    title="Alterar estado do serviço"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  <div className="px-2 py-1.5 text-sm font-medium text-gray-700 border-b">
+                    Alterar Estado
+                  </div>
+                  {serviceData.estado !== 'pendente' && (
+                    <DropdownMenuItem 
+                      onClick={() => handleStatusChange('pendente')}
+                      className="flex items-center gap-2 py-2"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                      Pendente
+                    </DropdownMenuItem>
+                  )}
+                  {serviceData.estado !== 'em_progresso' && (
+                    <DropdownMenuItem 
+                      onClick={() => handleStatusChange('em_progresso')}
+                      className="flex items-center gap-2 py-2"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      Em Progresso
+                    </DropdownMenuItem>
+                  )}                  {serviceData.estado !== 'aguarda_peca' && (
+                    <DropdownMenuItem 
+                      onClick={() => handleStatusChange('aguarda_peca')}
+                      className="flex items-center gap-2 py-2"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                      Aguardar por Peça
+                    </DropdownMenuItem>
+                  )}
+                  {serviceData.estado !== 'concluido' && (
+                    <DropdownMenuItem 
+                      onClick={() => handleStatusChange('concluido')}
+                      className="flex items-center gap-2 py-2"
+                    >
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      Concluído
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div><div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-1 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+              onClick={handlePrint}
+            >
               <Printer className="h-4 w-4" />
               <span className="hidden sm:inline">Imprimir</span>
-            </Button>
-            <DropdownMenu>
+            </Button>            <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" disabled={isChangingStatus}>
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>              <DropdownMenuContent align="end">
                 <DropdownMenuItem>Editar Serviço</DropdownMenuItem>
                 <DropdownMenuItem>Enviar por Email</DropdownMenuItem>
-                <DropdownMenuItem>Marcar como Concluído</DropdownMenuItem>
+                <DropdownMenuItem>Duplicar Serviço</DropdownMenuItem>
                 <DropdownMenuItem 
                   className="text-red-600" 
                   onClick={() => setShowCancelDialog(true)}
@@ -646,8 +746,8 @@ const fetchServiceData = async () => {
                     </div>
                     <div className="border rounded-md overflow-hidden">
                       <table className="w-full">
-                        <thead>
-                          <tr className="bg-muted/50">
+                        <thead>                          <tr className="bg-muted/50">
+                            <th className="text-left p-2 px-4 text-sm font-medium text-muted-foreground">Código</th>
                             <th className="text-left p-2 px-4 text-sm font-medium text-muted-foreground">Descrição</th>
                             <th className="text-center p-2 text-sm font-medium text-muted-foreground">Quantidade</th>
                             <th className="text-right p-2 px-4 text-sm font-medium text-muted-foreground">Preço Unitário</th>
@@ -658,6 +758,7 @@ const fetchServiceData = async () => {
                         <tbody>
                           {serviceData.pecas && serviceData.pecas.length > 0 && serviceData.pecas.map((peca, index) => (
                             <tr key={index} className="border-t">
+                              <td className="p-2 px-4 font-mono text-sm">{peca.codigo}</td>
                               <td className="p-2 px-4">{peca.nome}</td>
                               <td className="p-2 text-center">{peca.quantidade}</td>
                               <td className="p-2 px-4 text-right">{parseFloat(peca.precoUnitario).toFixed(2)} €</td>
@@ -673,19 +774,17 @@ const fetchServiceData = async () => {
                                 </Button>
                               </td>
                             </tr>
-                          ))}
-                          {(!serviceData.pecas || serviceData.pecas.length === 0) && (
+                          ))}                          {(!serviceData.pecas || serviceData.pecas.length === 0) && (
                             <tr>
-                              <td colSpan={5} className="p-4 text-center text-muted-foreground italic">
+                              <td colSpan={6} className="p-4 text-center text-muted-foreground italic">
                                 Nenhuma peça registada
                               </td>
                             </tr>
                           )}
-                        </tbody>
-                        {serviceData.pecas && serviceData.pecas.length > 0 ? (
+                        </tbody>                        {serviceData.pecas && serviceData.pecas.length > 0 ? (
                         <tfoot className="bg-muted/30">
                           <tr>
-                            <td colSpan={4} className="p-2 px-4 text-right font-medium">
+                            <td colSpan={5} className="p-2 px-4 text-right font-medium">
                               Subtotal Peças:
                             </td>
                             <td className="p-2 px-4 text-right font-medium">
@@ -794,6 +893,7 @@ const fetchServiceData = async () => {
                   <Button 
                     variant="outline"
                     className="hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                    onClick={handlePrint}
                   >
                     <Printer className="h-4 w-4 mr-2" />
                     Imprimir Relatório

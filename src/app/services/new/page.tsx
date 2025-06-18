@@ -80,13 +80,13 @@ export default function NewServicePage() {
     morada: "",
     tipo: "particular",
   })
-
   const [formData, setFormData] = useState({
     tipo: "",
     descricaoProblema: "",
     tecnico: "",
     garantia: false,
-    periodoGarantia: "",
+    dataCompra: "",
+    documentoCompra: "",
     notas: "",
     clienteId: "",
     // Dados do equipamento
@@ -145,15 +145,14 @@ export default function NewServicePage() {
         throw new Error("Erro ao criar equipamento")
       }
 
-      const newEquipment = await equipmentResponse.json()
-
-      // Depois criar o serviço com o ID do equipamento
+      const newEquipment = await equipmentResponse.json()      // Depois criar o serviço com o ID do equipamento
       const serviceData = {
         tipo: formData.tipo,
         descricaoProblema: formData.descricaoProblema,
         tecnico: formData.tecnico,
         garantia: formData.garantia,
-        periodoGarantia: formData.periodoGarantia,
+        dataCompra: formData.dataCompra,
+        documentoCompra: formData.documentoCompra,
         notas: formData.notas,
         clienteId: formData.clienteId,
         equipamentoId: newEquipment.id,
@@ -556,17 +555,26 @@ export default function NewServicePage() {
                             onCheckedChange={(checked) => handleInputChange("garantia", checked)}
                           />
                           <Label htmlFor="garantia">Serviço em garantia</Label>
-                        </div>
-
-                        {formData.garantia && (
-                          <div className="space-y-2">
-                            <Label htmlFor="periodoGarantia">Período de Garantia</Label>
-                            <Input
-                              id="periodoGarantia"
-                              placeholder="Ex: 12 meses"
-                              value={formData.periodoGarantia}
-                              onChange={(e) => handleInputChange("periodoGarantia", e.target.value)}
-                            />
+                        </div>                        {formData.garantia && (
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="dataCompra">Data de Compra</Label>
+                              <Input
+                                id="dataCompra"
+                                type="date"
+                                value={formData.dataCompra}
+                                onChange={(e) => handleInputChange("dataCompra", e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="documentoCompra">Documento de Compra (opcional)</Label>
+                              <Input
+                                id="documentoCompra"
+                                placeholder="Ex: Fatura/Recibo número..."
+                                value={formData.documentoCompra}
+                                onChange={(e) => handleInputChange("documentoCompra", e.target.value)}
+                              />
+                            </div>
                           </div>
                         )}
                       </div>

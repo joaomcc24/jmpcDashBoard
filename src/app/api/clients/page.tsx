@@ -260,7 +260,7 @@ export default function ClientsPage() {
             <Users className="h-6 w-6 text-blue-600" />
             <h1 className="text-xl font-semibold text-gray-900">Gestão de Clientes</h1>
           </div>
-          <Button onClick={openNewClientDialog} className="gap-2 bg-blue-600 hover:bg-blue-700">
+          <Button onClick={openNewClientDialog} className="gap-2 bg-gray-800 text-white hover:bg-gray-700 hover:text-white">
             <Plus className="h-4 w-4" />
             Novo Cliente
           </Button>
