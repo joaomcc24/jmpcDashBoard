@@ -5,11 +5,15 @@ const prisma = new PrismaClient({
   log: ["error"],
 })
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  request: Request, 
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     console.log("=== INÍCIO ATUALIZAÇÃO CLIENTE API ===")
 
-    const id = Number.parseInt(params.id)
+    const { id: idParam } = await params
+    const id = Number.parseInt(idParam)
     const body = await request.json()
 
     console.log("ID do cliente:", id)
@@ -76,21 +80,24 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     console.log("=== FIM ATUALIZAÇÃO CLIENTE API - SUCESSO ===")
     return NextResponse.json(cleanClient)
-  } catch (error) {
-    console.error("Erro ao atualizar cliente:", error)
+  } catch (error) {    console.error("Erro ao atualizar cliente:", error)
     return NextResponse.json(
       {
         error: "Erro interno do servidor",
-        details: process.env.NODE_ENV === "development" ? error?.message : undefined,
+        details: process.env.NODE_ENV === "development" ? (error as Error)?.message : undefined,
       },
       { status: 500 },
     )
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: Request, 
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const id = Number.parseInt(params.id)
+    const { id: idParam } = await params
+    const id = Number.parseInt(idParam)
 
     // Verificar se o cliente tem serviços associados
     const servicesCount = await prisma.servico.count({
