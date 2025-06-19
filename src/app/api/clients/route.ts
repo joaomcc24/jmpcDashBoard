@@ -128,8 +128,7 @@ export async function POST(request: Request) {
           tipo,
         },
       })
-      console.log("Cliente criado com sucesso:", client.id)
-    } catch (createError) {
+      console.log("Cliente criado com sucesso:", client.id)    } catch (createError: any) {
       console.error("Erro ao criar cliente:", createError)
 
       // Verificar se é erro de constraint unique
@@ -164,8 +163,7 @@ export async function POST(request: Request) {
     }
 
     console.log("=== FIM CRIAÇÃO CLIENTE API - SUCESSO ===")
-    return NextResponse.json(cleanClient, { status: 201 })
-  } catch (error) {
+    return NextResponse.json(cleanClient, { status: 201 })  } catch (error: any) {
     console.error("=== ERRO GERAL NA CRIAÇÃO DO CLIENTE ===")
     console.error("Tipo do erro:", typeof error)
     console.error("Erro completo:", error)

@@ -56,22 +56,21 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/login",
     error: "/login",
-  },
-  callbacks: {
-    async jwt({ token, user }: any) {
+  },  callbacks: {
+    async jwt({ token, user }: { token: any; user?: any }) {
       if (user) {
         token.role = user.role
       }
       return token
     },
-    async session({ session, token }: any) {
+    async session({ session, token }: { session: any; token: any }) {
       if (token) {
         session.user.id = token.sub!
         session.user.role = token.role as string
       }
       return session
     },
-    async redirect({ url, baseUrl }: any) {
+    async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
       // Evitar loops infinitos
       if (url.startsWith("/")) return `${baseUrl}${url}`
       else if (new URL(url).origin === baseUrl) return url

@@ -25,12 +25,13 @@ const AlertDialogTrigger = React.forwardRef<
   if (!context) throw new Error("AlertDialogTrigger must be used within AlertDialog")
 
   const { setOpen } = context
-
+  
   if (asChild && React.isValidElement(children)) {
+    const childProps = children.props as any || {}
     return React.cloneElement(children, {
-      ...children.props,
+      ...childProps,
       onClick: (e: React.MouseEvent) => {
-        children.props.onClick?.(e)
+        childProps.onClick?.(e)
         setOpen(true)
       },
     })

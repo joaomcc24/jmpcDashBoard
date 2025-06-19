@@ -1,5 +1,6 @@
 "use client"
 
+import Link from 'next/link';
 import { useState, useEffect } from "react"
 import { Users, Wrench, Package, TrendingUp, Calendar, Clock, CheckCircle, User, ArrowRight } from "lucide-react"
 import { Sidebar } from "@/components/layout/Sidebar"
@@ -209,9 +210,8 @@ export default function DashboardPage() {  const [stats, setStats] = useState<Da
               <Card className="border-0 shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold text-gray-900">Ações Rápidas</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <a
+                </CardHeader>                <CardContent className="space-y-3">
+                  <Link
                     href="/services/new"
                     className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors group"
                   >
@@ -223,9 +223,9 @@ export default function DashboardPage() {  const [stats, setStats] = useState<Da
                       <p className="text-sm text-gray-600">Criar nova folha de serviço</p>
                     </div>
                     <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
-                  </a>
+                  </Link>
 
-                  <a
+                  <Link
                     href="/clients"
                     className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors group"
                   >
@@ -237,9 +237,9 @@ export default function DashboardPage() {  const [stats, setStats] = useState<Da
                       <p className="text-sm text-gray-600">Ver e gerir clientes</p>
                     </div>
                     <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
-                  </a>
+                  </Link>
 
-                  <a
+                  <Link
                     href="/services"
                     className="flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors group"
                   >
@@ -251,7 +251,7 @@ export default function DashboardPage() {  const [stats, setStats] = useState<Da
                       <p className="text-sm text-gray-600">Gerir todos os serviços</p>
                     </div>
                     <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
-                  </a>
+                  </Link>
                 </CardContent>
               </Card>
 

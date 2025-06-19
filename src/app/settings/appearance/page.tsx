@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Palette, Monitor, Sun, Moon } from "lucide-react"
 import { Sidebar } from "@/components/layout/Sidebar"
@@ -11,20 +11,61 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export default function AppearancePage() {
   const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [initialLoad, setInitialLoad] = useState(true)
   const [theme, setTheme] = useState("system")
   const [colorScheme, setColorScheme] = useState("blue")
   const [fontSize, setFontSize] = useState("medium")
   const [compactMode, setCompactMode] = useState(false)
 
-  const handleSave = () => {
-    // Em uma aplicação real, aqui salvaria as preferências no backend
-    console.log("Preferências de aparência guardadas:", {
-      theme,
-      colorScheme,
-      fontSize,
-      compactMode
-    })
-    alert("Preferências de aparência guardadas com sucesso!")
+  // Carregar configurações ao montar o componente
+  useEffect(() => {
+    loadSettings()
+  }, [])
+
+  const loadSettings = async () => {
+    try {
+      const response = await fetch('/api/settings')
+      if (response.ok) {
+        const settings = await response.json()
+        setTheme(settings.theme || "system")
+        setColorScheme(settings.colorScheme || "blue")
+        setFontSize(settings.fontSize || "medium")
+        setCompactMode(settings.compactMode || false)
+      }
+    } catch (error) {
+      console.error('Erro ao carregar configurações:', error)
+    } finally {
+      setInitialLoad(false)
+    }
+  }
+  const handleSave = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          theme,
+          colorScheme,
+          fontSize,
+          compactMode
+        })
+      })
+      
+      if (response.ok) {
+        alert("Preferências de aparência guardadas com sucesso!")
+      } else {
+        throw new Error('Erro ao guardar configurações')
+      }
+    } catch (error) {
+      console.error("Erro ao guardar configurações:", error)
+      alert("Erro ao guardar configurações. Tente novamente.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -187,9 +228,8 @@ export default function AppearancePage() {
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={() => router.back()}>
               Cancelar
-            </Button>
-            <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
-              Guardar Alterações
+            </Button>            <Button onClick={handleSave} disabled={loading} className="bg-blue-600 hover:bg-blue-700">
+              {loading ? "A guardar..." : "Guardar Alterações"}
             </Button>
           </div>
         </main>

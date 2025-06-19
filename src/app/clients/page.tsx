@@ -444,7 +444,7 @@ export default function ClientsPage() {
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Eliminar Cliente</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Tem a certeza que deseja eliminar o cliente "{client.nome}" ({client.clienteId})?
+                                    Tem a certeza que deseja eliminar o cliente &quot;{client.nome}&quot; ({client.clienteId})?
                                     Esta ação não pode ser desfeita.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>

@@ -288,15 +288,12 @@ export default function ServicesPage() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-3">
-                              <h3 className="text-lg font-semibold text-gray-900">{service.tipo}</h3>
-                              <Badge
-                                className={
-                                  SERVICE_STATE_COLORS[service.estado] || SERVICE_STATE_COLORS[SERVICE_STATES.PENDING]
+                              <h3 className="text-lg font-semibold text-gray-900">{service.tipo}</h3>                              <Badge                                className={
+                                  (SERVICE_STATE_COLORS as any)[service.estado] || SERVICE_STATE_COLORS[SERVICE_STATES.PENDING]
                                 }
                               >
-                                <div className="flex items-center gap-1">
-                                  {getStateIcon(service.estado)}
-                                  {SERVICE_STATE_LABELS[service.estado] || service.estado}
+                                <div className="flex items-center gap-1">                                  {getStateIcon(service.estado)}
+                                  {(SERVICE_STATE_LABELS as any)[service.estado] || service.estado}
                                 </div>
                               </Badge>
                               {service.garantia && (
