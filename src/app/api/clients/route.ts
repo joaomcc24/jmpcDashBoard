@@ -96,14 +96,21 @@ export async function POST(request: Request) {
       if (existingNif) {
         return NextResponse.json({ error: "Já existe um cliente com este NIF" }, { status: 400 })
       }
-    }
-
-    // Gerar ID incremental para cliente
+    }    // Gerar ID incremental para cliente
     const lastClient = await prisma.cliente.findFirst({
-      orderBy: { id: "desc" },
-      select: { id: true },
+      orderBy: { clienteId: "desc" },
+      select: { clienteId: true },
     })
-    const nextNumber = (lastClient?.id || 0) + 1
+    
+    let nextNumber = 1
+    if (lastClient?.clienteId) {
+      // Extrair número do último clienteId (formato CLT-001, CLT-002, etc.)
+      const match = lastClient.clienteId.match(/CLT-(\d+)/)
+      if (match) {
+        nextNumber = parseInt(match[1]) + 1
+      }
+    }
+    
     const clienteId = `CLT-${nextNumber.toString().padStart(3, "0")}`
 
     console.log("A criar cliente na base de dados...")

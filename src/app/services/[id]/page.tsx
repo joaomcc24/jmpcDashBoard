@@ -27,6 +27,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { StatusBadge } from "@/components/ui/status-badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -119,14 +122,18 @@ interface ServiceData {
   updatedAt: string;
 }
 
-export default function DetalhesServicoPage() {
-  const params = useParams()
+export default function DetalhesServicoPage() {  const params = useParams()
   const router = useRouter()
-  const serviceId = params.id  // Estado para controlar a edição de notas
-  const [isEditingNotes, setIsEditingNotes] = useState(false)
-  const [serviceNotes, setServiceNotes] = useState("O cliente reportou que o aparelho não liga. Após inspeção inicial, verificou-se que o compressor não está a funcionar. Foi solicitada a peça de substituição ao fornecedor.")
+  const serviceId = params.id
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [isChangingStatus, setIsChangingStatus] = useState(false)
+  
+  // Novos estados para histórico e fotos
+  const [showAddHistoryDialog, setShowAddHistoryDialog] = useState(false)
+  const [newHistoryEntry, setNewHistoryEntry] = useState("")
+  const [showAddPhotoDialog, setShowAddPhotoDialog] = useState(false)
+  const [newPhotoDescription, setNewPhotoDescription] = useState("")
+  const [selectedPhotoFile, setSelectedPhotoFile] = useState<File | null>(null)
   
   const [serviceData, setServiceData] = useState<ServiceData | null>(null);
 
@@ -151,10 +158,8 @@ const fetchServiceData = async () => {
       console.error(`Erro HTTP: ${response.status}`);
       throw new Error('Erro ao buscar dados do serviço');
     }
-    
-    const data = await response.json();
+      const data = await response.json();
     setServiceData(data);
-    setServiceNotes(data.notas || "");
   } catch (error) {
     console.error("Erro ao carregar serviço:", error);
     setLoading(false);
@@ -165,7 +170,8 @@ const fetchServiceData = async () => {
   }
 };    if (serviceId) {
       fetchServiceData()
-    }  }, [serviceId, router])
+    }
+  }, [serviceId, router])
 
   const { handlePrint } = PrintReport({ serviceData: serviceData! })
 
@@ -174,19 +180,16 @@ const fetchServiceData = async () => {
     
     try {
       const response = await fetch(`/api/services/${serviceId}`)
-      if (response.ok) {
-        const data = await response.json()
+      if (response.ok) {        const data = await response.json()
         setServiceData(data)
-        setServiceNotes(data.notas || "")
       }
     } catch (error) {
       console.error("Erro ao atualizar dados:", error)
-    }
-  }
+    }  }
 
   const handleDeletePart = async (partId: number) => {
     try {
-      const response = await fetch(`/api/services/${serviceId}/parts?partId=${partId}`, {
+      const response = await fetch(`/api/services/${serviceId}/parts/${partId}`, {
         method: 'DELETE',
       })
       
@@ -226,34 +229,6 @@ const fetchServiceData = async () => {
     }
   }
 
-  const handleSaveNotes = async () => {
-    if (!serviceData) return
-    
-    try {
-      const response = await fetch(`/api/services/${serviceId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...serviceData,
-          notas: serviceNotes
-        })
-      })
-      
-      if (!response.ok) {
-        throw new Error('Erro ao salvar notas')
-      }
-      
-      const updatedService = await response.json()
-      setServiceData(updatedService)
-      setIsEditingNotes(false)
-      // Poderia adicionar um toast de sucesso aqui
-    } catch (error) {
-      console.error("Erro ao salvar notas:", error)
-      //  Adicionar um toast(?) de erro aqui
-    }
-  }
   const handleCancelService = async () => {
     if (!serviceData) return
     
@@ -309,6 +284,70 @@ const fetchServiceData = async () => {
       alert("Erro ao alterar estado do serviço")
     } finally {
       setIsChangingStatus(false)
+    }
+  }
+
+  const handleAddHistoryEntry = async () => {
+    if (!newHistoryEntry.trim()) return
+    
+    try {
+      const response = await fetch(`/api/services/${serviceId}/history`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          acao: newHistoryEntry,
+          autor: "Utilizador Atual" // Em uma aplicação real, obteria do contexto do usuário
+        }),
+      })
+      
+      if (response.ok) {
+        setNewHistoryEntry("")
+        setShowAddHistoryDialog(false)
+        refreshServiceData()
+      }
+    } catch (error) {
+      console.error("Erro ao adicionar entrada no histórico:", error)
+    }
+  }
+
+  const handleAddPhoto = async () => {
+    if (!selectedPhotoFile || !newPhotoDescription.trim()) return
+    
+    try {
+      const formData = new FormData()
+      formData.append('photo', selectedPhotoFile)
+      formData.append('description', newPhotoDescription)
+      formData.append('serviceId', serviceId as string)
+      
+      const response = await fetch(`/api/services/${serviceId}/photos`, {
+        method: 'POST',
+        body: formData,
+      })
+      
+      if (response.ok) {
+        setNewPhotoDescription("")
+        setSelectedPhotoFile(null)
+        setShowAddPhotoDialog(false)
+        refreshServiceData()
+      }
+    } catch (error) {
+      console.error("Erro ao adicionar foto:", error)
+    }
+  }
+
+  const handleDeletePhoto = async (photoId: number) => {
+    try {
+      const response = await fetch(`/api/services/${serviceId}/photos/${photoId}`, {
+        method: 'DELETE',
+      })
+      
+      if (response.ok) {
+        refreshServiceData()
+      }
+    } catch (error) {
+      console.error("Erro ao remover foto:", error)
     }
   }
 
@@ -413,7 +452,9 @@ const fetchServiceData = async () => {
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>              <DropdownMenuContent align="end">
-                <DropdownMenuItem>Editar Serviço</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push(`/services/${serviceId}/edit`)}>
+                  Editar Serviço
+                </DropdownMenuItem>
                 <DropdownMenuItem>Enviar por Email</DropdownMenuItem>
                 <DropdownMenuItem>Duplicar Serviço</DropdownMenuItem>
                 <DropdownMenuItem 
@@ -492,7 +533,7 @@ const fetchServiceData = async () => {
                       </div>
                       <div>
                         <dt className="text-sm font-medium text-muted-foreground">Tipo de Cliente</dt>
-                        <dd className="text-base">{serviceData.cliente.tipo}</dd>
+                        <dd className="text-base capitalize">{serviceData.cliente.tipo}</dd>
                       </div>
                     </dl>
                   </CardContent>
@@ -572,7 +613,7 @@ const fetchServiceData = async () => {
                             <CheckCircle2 className="h-4 w-4 text-green-500" /> : 
                             <XCircle className="h-4 w-4 text-red-500" />
                           }
-                          {serviceData.garantia ? `Sim (${serviceData.periodoGarantia})` : "Não"}
+                          {serviceData.garantia ? `Sim` : "Não"}
                         </dd>
                       </div>
                     </dl>
@@ -611,122 +652,251 @@ const fetchServiceData = async () => {
                       </div>
                     </dl>
                   </div>
-                  
-                  <div className="mt-6">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-sm font-medium text-muted-foreground">Notas Técnicas</h3>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => setIsEditingNotes(!isEditingNotes)}
-                      >
-                        <Edit className="h-4 w-4" />
-                        <span className="ml-1">{isEditingNotes ? "Cancelar" : "Editar"}</span>
-                      </Button>
-                    </div>
-                    
-                    {isEditingNotes ? (
-                      <div className="space-y-2">
-                        <textarea 
-                          className="w-full min-h-[120px] p-3 border rounded-md" 
-                          value={serviceNotes}
-                          onChange={(e) => setServiceNotes(e.target.value)}
-                        />
-                        <div className="flex justify-end">
-                          <Button onClick={handleSaveNotes}>Guardar Notas</Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="bg-muted/50 rounded-md whitespace-pre-wrap">
-                        {serviceNotes}
-                      </p>
-                    )}
+                    <div className="mt-6">
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Notas Técnicas</h3>
+                    <p className="bg-muted/50 rounded-md p-3 whitespace-pre-wrap">
+                      {serviceData.notas || "Sem notas técnicas registadas."}
+                    </p>
                   </div>
                 </CardContent>
-              </Card>
-            </TabsContent>
-            
+              </Card>            </TabsContent>            {/* Aba de Histórico */}
             <TabsContent value="historico" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Histórico do Serviço</CardTitle>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    Histórico do Serviço
+                  </CardTitle>
                   <CardDescription>
-                    Registo de todas as atividades relacionadas com este serviço
+                    Acompanhe todas as alterações e atualizações realizadas neste serviço
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-6">
-                  {serviceData.historico && serviceData.historico.map((entry, index) => (
-                <div key={index} className="flex">
-                  <div className="mr-4 flex flex-col items-center">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-muted bg-muted/50">
-                      <Clock className="h-5 w-5 text-muted-foreground" />
+                  {serviceData.historico && serviceData.historico.length > 0 ? (
+                    <div className="space-y-4">
+                      {serviceData.historico.map((entry, index) => (
+                        <div key={entry.id || index} className="flex gap-4 pb-4 border-b last:border-b-0">
+                          <div className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <p className="font-medium text-sm">{entry.acao}</p>
+                              <time className="text-xs text-muted-foreground">
+                                {new Date(entry.data).toLocaleDateString('pt-PT')} às {entry.hora}
+                              </time>
+                            </div>
+                            <p className="text-sm text-muted-foreground">Por: {entry.autor}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    {index < serviceData.historico.length - 1 && (
-                      <div className="w-px flex-1 bg-border mt-2" />
-                    )}
-                  </div>
-                  <div className="pb-6">
-                    <div className="flex items-baseline gap-2">
-                      <p className="text-sm font-semibold">{entry.data}</p>
-                      <p className="text-xs text-muted-foreground">{entry.hora}</p>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">Nenhum histórico registado para este serviço</p>
                     </div>
-                    <p className="mt-1">{entry.acao}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">Por: {entry.autor}</p>
+                  )}
+                  
+                  {/* Botão para adicionar nova entrada */}
+                  <div className="border-t pt-4 mt-6">
+                    <Button 
+                      onClick={() => setShowAddHistoryDialog(true)}
+                      className="gap-2"
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                      Adicionar Evento
+                    </Button>
                   </div>
-                </div>
-              ))}
-                    
-                    <div className="flex">
-                      <div className="mr-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-dashed border-muted">
-                          <PlusCircle className="h-5 w-5 text-muted-foreground" />
+                </CardContent>
+              </Card>
+                {/* Dialog para adicionar evento ao histórico */}
+              {showAddHistoryDialog && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+                  <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 border border-gray-200">
+                    <div className="p-6">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-blue-600" />
+                        Adicionar Evento ao Histórico
+                      </h3>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="history-entry" className="text-sm font-medium text-gray-700">
+                            Descrição do evento
+                          </Label>
+                          <Textarea
+                            id="history-entry"
+                            value={newHistoryEntry}
+                            onChange={(e) => setNewHistoryEntry(e.target.value)}
+                            placeholder="Descreva o que aconteceu..."
+                            rows={4}
+                            className="mt-1 w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                          />
                         </div>
                       </div>
-                      <div className="flex items-center">
-                        <Button variant="outline" className="gap-1">
-                          <PlusCircle className="h-4 w-4" />
+                      <div className="flex justify-end gap-3 mt-6">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {
+                            setShowAddHistoryDialog(false)
+                            setNewHistoryEntry("")
+                          }}
+                          className="px-4 py-2"
+                        >
+                          Cancelar
+                        </Button>
+                        <Button 
+                          onClick={handleAddHistoryEntry}
+                          disabled={!newHistoryEntry.trim()}
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700"
+                        >
                           Adicionar Evento
                         </Button>
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              )}
             </TabsContent>
-            
+
+            {/* Aba de Fotos */}
             <TabsContent value="fotos" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Fotos do Serviço</CardTitle>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <ImageIcon className="h-5 w-5" />
+                    Fotos do Serviço
+                  </CardTitle>
                   <CardDescription>
-                    Fotografias do equipamento antes, durante e após a reparação
+                    Documentação visual do equipamento e do processo de reparação
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {serviceData.fotos && serviceData.fotos.map((foto) => (
-                      <div key={foto.id} className="group relative overflow-hidden rounded-md border">
-                        <div className="aspect-video w-full bg-muted flex items-center justify-center">
-                          <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                  {serviceData.fotos && serviceData.fotos.length > 0 ? (
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      {serviceData.fotos.map((foto, index) => (
+                        <div key={foto.id || index} className="space-y-2">
+                          <div className="aspect-square bg-muted rounded-lg flex items-center justify-center relative group">
+                            {foto.url ? (
+                              <img 
+                                src={foto.url} 
+                                alt={foto.descricao || `Foto ${index + 1}`}
+                                className="w-full h-full object-cover rounded-lg"
+                              />
+                            ) : (
+                              <ImageIcon className="h-12 w-12 text-muted-foreground" />
+                            )}
+                            
+                            {/* Botão de remover foto */}
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => handleDeletePhoto(foto.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium">{foto.descricao || `Foto ${index + 1}`}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Adicionada em {new Date(foto.createdAt).toLocaleDateString('pt-PT')}
+                            </p>
+                          </div>
                         </div>
-                        <div className="p-2">
-                          <p className="text-sm">{foto.descricao}</p>
-                        </div>
-                      </div>
-                    ))}
-                    
-                    <div className="group relative overflow-hidden rounded-md border border-dashed">
-                      <div className="aspect-video w-full bg-muted/50 flex flex-col items-center justify-center">
-                        <PlusCircle className="h-8 w-8 text-muted-foreground mb-2" />
-                        <p className="text-sm text-muted-foreground">Adicionar foto</p>
-                      </div>
+                      ))}
                     </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground mb-4">Nenhuma foto anexada a este serviço</p>
+                    </div>
+                  )}
+                  
+                  {/* Botão para adicionar foto */}
+                  <div className="border-t pt-4 mt-6">
+                    <Button 
+                      onClick={() => setShowAddPhotoDialog(true)}
+                      className="gap-2"
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                      Adicionar Foto
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
-            </TabsContent>
-            
+                {/* Dialog para adicionar foto */}
+              {showAddPhotoDialog && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+                  <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 border border-gray-200">
+                    <div className="p-6">                      <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <ImageIcon className="h-5 w-5 text-blue-600" />
+                        Adicionar Foto
+                      </h3>
+                      
+                      <div className="space-y-4">                        <div>
+                          <Label className="text-sm font-medium text-gray-700">
+                            Selecionar Foto
+                          </Label>
+                          <div className="mt-1">
+                            <input
+                              id="photo-file"
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => setSelectedPhotoFile(e.target.files?.[0] || null)}
+                              className="hidden"
+                            />
+                            <label
+                              htmlFor="photo-file"
+                              className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                            >
+                              <div className="text-center">
+                                <ImageIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                                <p className="text-sm text-gray-600">
+                                  {selectedPhotoFile ? selectedPhotoFile.name : "Clique para selecionar uma foto"}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1">PNG, JPG até 10MB</p>
+                              </div>
+                            </label>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="photo-description" className="text-sm font-medium text-gray-700">
+                            Descrição
+                          </Label>
+                          <Input
+                            id="photo-description"
+                            value={newPhotoDescription}
+                            onChange={(e) => setNewPhotoDescription(e.target.value)}                            placeholder="Descreva a foto (ex: Estado inicial do equipamento)..."
+                            className="mt-1 w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-end gap-3 mt-6">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {
+                            setShowAddPhotoDialog(false)
+                            setNewPhotoDescription("")
+                            setSelectedPhotoFile(null)
+                          }}
+                          className="px-4 py-2"
+                        >
+                          Cancelar
+                        </Button>
+                        <Button 
+                          onClick={handleAddPhoto}
+                          disabled={!selectedPhotoFile || !newPhotoDescription.trim()}
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700"
+                        >
+                          Adicionar Foto
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </TabsContent>            {/* Aba de Relatório */}
             <TabsContent value="relatorio" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -735,18 +905,20 @@ const fetchServiceData = async () => {
                     Informações do relatório para este serviço
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">                  {/* Peças utilizadas */}
-                  <div>
-                    <div className="flex justify-between items-center mb-3">
+                <CardContent className="space-y-6">
+                  {/* Peças utilizadas */}
+                  <div>                    <div className="flex justify-between items-center mb-3">
                       <h3 className="font-medium">Peças Utilizadas</h3>
                       <AddPartDialog 
                         serviceId={serviceId as string} 
                         onPartAdded={refreshServiceData} 
                       />
                     </div>
+                    
                     <div className="border rounded-md overflow-hidden">
                       <table className="w-full">
-                        <thead>                          <tr className="bg-muted/50">
+                        <thead>
+                          <tr className="bg-muted/50">
                             <th className="text-left p-2 px-4 text-sm font-medium text-muted-foreground">Código</th>
                             <th className="text-left p-2 px-4 text-sm font-medium text-muted-foreground">Descrição</th>
                             <th className="text-center p-2 text-sm font-medium text-muted-foreground">Quantidade</th>
@@ -756,153 +928,157 @@ const fetchServiceData = async () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {serviceData.pecas && serviceData.pecas.length > 0 && serviceData.pecas.map((peca, index) => (
-                            <tr key={index} className="border-t">
-                              <td className="p-2 px-4 font-mono text-sm">{peca.codigo}</td>
-                              <td className="p-2 px-4">{peca.nome}</td>
-                              <td className="p-2 text-center">{peca.quantidade}</td>
-                              <td className="p-2 px-4 text-right">{parseFloat(peca.precoUnitario).toFixed(2)} €</td>
-                              <td className="p-2 px-4 text-right font-medium">{parseFloat(peca.total).toFixed(2)} €</td>
-                              <td className="p-2 text-center">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeletePart(peca.id)}
-                                  className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}                          {(!serviceData.pecas || serviceData.pecas.length === 0) && (
+                          {serviceData.pecas && serviceData.pecas.length > 0 ? 
+                            serviceData.pecas.map((peca, index) => (
+                              <tr key={index} className="border-t">
+                                <td className="p-2 px-4 font-mono text-sm">{peca.codigo}</td>
+                                <td className="p-2 px-4">{peca.nome}</td>
+                                <td className="p-2 text-center">{peca.quantidade}</td>
+                                <td className="p-2 px-4 text-right">{parseFloat(peca.precoUnitario).toFixed(2)} €</td>
+                                <td className="p-2 px-4 text-right font-medium">{parseFloat(peca.total).toFixed(2)} €</td>
+                                <td className="p-2 text-center">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
+                                    onClick={() => handleDeletePart(peca.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </td>
+                              </tr>
+                            )) : (
+                              <tr>
+                                <td colSpan={6} className="p-4 text-center text-muted-foreground italic">
+                                  Nenhuma peça registada
+                                </td>
+                              </tr>
+                            )
+                          }
+                        </tbody>
+                        {serviceData.pecas && serviceData.pecas.length > 0 && (
+                          <tfoot className="bg-muted/30">
                             <tr>
-                              <td colSpan={6} className="p-4 text-center text-muted-foreground italic">
-                                Nenhuma peça registada
+                              <td colSpan={4} className="p-2 px-4 text-right font-medium">
+                                Subtotal Peças:
                               </td>
+                              <td className="p-2 px-4 text-right font-medium">
+                                {serviceData.pecas.reduce((total, peca) => total + parseFloat(peca.total), 0).toFixed(2)} €
+                              </td>
+                              <td></td>
                             </tr>
-                          )}
-                        </tbody>                        {serviceData.pecas && serviceData.pecas.length > 0 ? (
-                        <tfoot className="bg-muted/30">
-                          <tr>
-                            <td colSpan={5} className="p-2 px-4 text-right font-medium">
-                              Subtotal Peças:
-                            </td>
-                            <td className="p-2 px-4 text-right font-medium">
-                              {serviceData.pecas.reduce((total, peca) => total + parseFloat(peca.total), 0).toFixed(2)} €
-                            </td>
-                          </tr>
-                        </tfoot>
-                      ) : null}
+                          </tfoot>
+                        )}
                       </table>
                     </div>
                   </div>
-                  
-                  <div className="grid gap-6 md:grid-cols-2">                    {/* Mão de obra */}
-                    <div>
-                      <div className="flex justify-between items-center mb-3">
+
+                  {/* Mão de obra e Deslocação lado a lado */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Mão de obra */}
+                    <div>                      <div className="flex justify-between items-center mb-3">
                         <h3 className="font-medium">Mão de Obra</h3>
-                        <div className="flex gap-2">
+                        {!serviceData.maoDeObra ? (
                           <AddLaborDialog 
                             serviceId={serviceId as string} 
-                            existingLabor={serviceData.maoDeObra}
                             onLaborAdded={refreshServiceData} 
                           />
-                          {serviceData.maoDeObra && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={handleDeleteLabor}
-                              className="h-9 w-9 p-0 hover:bg-red-100 hover:text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleDeleteLabor}
+                            className="hover:bg-red-100 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                      <div className="border rounded-md p-4 bg-muted/50">
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm text-muted-foreground">Horas de trabalho:</span>
+                            <span className="font-medium">{serviceData.maoDeObra?.horas || "0"}h</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-muted-foreground">Valor por hora:</span>
+                            <span className="font-medium">{serviceData.maoDeObra ? parseFloat(serviceData.maoDeObra.valorHora).toFixed(2) : "0.00"} €</span>
+                          </div>
+                          <div className="flex justify-between border-t pt-2">
+                            <span className="font-medium">Total Mão de Obra:</span>
+                            <span className="font-bold text-lg">{serviceData.maoDeObra ? parseFloat(serviceData.maoDeObra.total).toFixed(2) : "0.00"} €</span>
+                          </div>
                         </div>
                       </div>
-                      {serviceData.maoDeObra ? (
-                      <div className="border rounded-md p-4 space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">Horas de trabalho:</span>
-                          <span>{serviceData.maoDeObra.horas}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-muted-foreground">Valor por hora:</span>
-                          <span>{parseFloat(serviceData.maoDeObra.valorHora).toFixed(2)} €</span>
-                        </div>
-                        <Separator />
-                        <div className="flex justify-between items-center font-medium">
-                          <span>Total Mão de Obra:</span>
-                          <span>{parseFloat(serviceData.maoDeObra.total).toFixed(2)} €</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground italic">Sem registos de mão de obra</p>
-                    )}
-                    </div>                    {/* Deslocação */}
-                    <div>
-                      <div className="flex justify-between items-center mb-3">
+                    </div>
+
+                    {/* Deslocação */}
+                    <div>                      <div className="flex justify-between items-center mb-3">
                         <h3 className="font-medium">Deslocação</h3>
-                        <div className="flex gap-2">
+                        {!serviceData.deslocacao ? (
                           <AddTravelDialog 
                             serviceId={serviceId as string} 
-                            existingTravel={serviceData.deslocacao}
                             onTravelAdded={refreshServiceData} 
                           />
-                          {serviceData.deslocacao && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={handleDeleteTravel}
-                              className="h-9 w-9 p-0 hover:bg-red-100 hover:text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleDeleteTravel}
+                            className="hover:bg-red-100 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                      <div className="border rounded-md p-4 bg-muted/50">
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm text-muted-foreground">Quilómetros:</span>
+                            <span className="font-medium">{serviceData.deslocacao?.km || "0"} km</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm text-muted-foreground">Valor por km:</span>
+                            <span className="font-medium">{serviceData.deslocacao ? parseFloat(serviceData.deslocacao.valorKm).toFixed(2) : "0.00"} €</span>
+                          </div>
+                          <div className="flex justify-between border-t pt-2">
+                            <span className="font-medium">Total Deslocação:</span>
+                            <span className="font-bold text-lg">{serviceData.deslocacao ? parseFloat(serviceData.deslocacao.total).toFixed(2) : "0.00"} €</span>
+                          </div>
                         </div>
                       </div>
-                      {serviceData.deslocacao ? (
-                        <div className="border rounded-md p-4 space-y-4">
-                          <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">Quilómetros:</span>
-                            <span>{serviceData.deslocacao.km}</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">Valor por km:</span>
-                            <span>{parseFloat(serviceData.deslocacao.valorKm).toFixed(2)} €</span>
-                          </div>
-                          <Separator />
-                          <div className="flex justify-between items-center font-medium">
-                            <span>Total Deslocação:</span>
-                            <span>{parseFloat(serviceData.deslocacao.total).toFixed(2)} €</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground italic">Sem registos de deslocação</p>
-                      )}
                     </div>
                   </div>
-                  
-                  {/* Total */}
-                  <div className="bg-muted/20 p-4 rounded-md">
-                    <div className="flex justify-between items-center text-lg font-semibold">
-                      <span>Total do serviço:</span>
-                      <span>{serviceData.valorTotal ? parseFloat(serviceData.valorTotal).toFixed(2) : "0.00"} €</span>
+
+                  {/* Total geral */}
+                  <div className="border-1 rounded-lg bg-blue-50 p-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-bold text-blue-800">Total do serviço:</span>
+                      <span className="text-2xl font-bold text-gray-900">
+                        {(
+                          (serviceData.pecas?.reduce((sum, peca) => sum + parseFloat(peca.total), 0) || 0) +
+                          (serviceData.maoDeObra ? parseFloat(serviceData.maoDeObra.total) : 0) +
+                          (serviceData.deslocacao ? parseFloat(serviceData.deslocacao.total) : 0)
+                        ).toFixed(2)} €
+                      </span>
                     </div>
                   </div>
-                </CardContent>                <CardFooter className="border-t pt-4 flex justify-end gap-2">
-                  <Button 
-                    variant="outline"
-                    className="hover:bg-gray-100 hover:text-gray-900 transition-colors"
-                    onClick={handlePrint}
-                  >
-                    <Printer className="h-4 w-4 mr-2" />
-                    Imprimir Relatório
-                  </Button>
-                  <Button className="bg-gray-800 text-white hover:bg-gray-700">
-                    <Mail className="h-4 w-4 mr-2" />
-                    Enviar por Email
-                  </Button>
-                </CardFooter>
+
+                  {/* Botões de ação */}
+                  <div className="flex justify-center gap-3 pt-4">
+                    <Button 
+                      onClick={handlePrint}
+                      className="gap-2 bg-gray-800 text-white hover:bg-gray-700 hover:text-white"
+                    >
+                      <Printer className="h-4 w-4" />
+                      Imprimir Relatório
+                    </Button>
+                    <Button variant="outline" className="gap-2">
+                      <Mail className="h-4 w-4" />
+                      Enviar por Email
+                    </Button>
+                  </div>
+                </CardContent>
               </Card>
             </TabsContent>
               </Tabs>

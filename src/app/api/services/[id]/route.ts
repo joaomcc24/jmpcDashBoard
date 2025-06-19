@@ -76,6 +76,41 @@ export async function PUT(
   }
 }
 
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  
+  try {
+    const body = await request.json()
+    
+    const service = await prisma.servico.update({
+      where: {
+        id: id,
+      },
+      data: body,
+      include: {
+        cliente: true,
+        equipamento: true,
+        historico: true,
+        fotos: true,
+        pecas: true,
+        maoDeObra: true,
+        deslocacao: true,
+      }
+    })
+    
+    return NextResponse.json(service)
+  } catch (error) {
+    console.error('Erro ao atualizar serviço:', error)
+    return NextResponse.json(
+      { error: "Erro ao atualizar serviço" },
+      { status: 500 }
+    )
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

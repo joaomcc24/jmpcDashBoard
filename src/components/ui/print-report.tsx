@@ -50,10 +50,9 @@ interface PrintReportProps {
   serviceData: ServiceData
 }
 
-export function PrintReport({ serviceData }: PrintReportProps) {
-  const handlePrint = () => {
-    // Create a new window for printing
-    const printWindow = window.open('', '_blank')
+export function PrintReport({ serviceData }: PrintReportProps) {  const handlePrint = () => {
+    // Create a new window for printing with proper title
+    const printWindow = window.open('', '_blank', 'width=800,height=600')
     if (!printWindow) return
 
     // Calculate totals
@@ -69,16 +68,21 @@ export function PrintReport({ serviceData }: PrintReportProps) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório de Serviço - ${serviceData.id}</title>
-    <style>
-        @media print {
+    <title>Serviço ${serviceData.id} - ${serviceData.cliente.nome}</title>
+    <style>        @media print {
             @page {
-                margin: 15mm;
+                margin: 8mm;
                 size: A4;
             }
             body {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+                max-height: 100vh;
+                overflow: hidden;
+            }
+            .page-content {
+                max-height: calc(100vh - 20mm);
+                overflow: hidden;
             }
         }
         
@@ -86,183 +90,189 @@ export function PrintReport({ serviceData }: PrintReportProps) {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-        
-        body {
+        }        body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
+            font-size: 10px;
+            line-height: 1.3;
             color: #333;
             background: white;
         }
-        
-        .header {
+          .header {
             text-align: center;
-            border-bottom: 3px solid #2563eb;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .company-name {
-            font-size: 24px;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }        .company-name {
+            font-size: 18px;
             font-weight: bold;
-            color: #2563eb;
-            margin-bottom: 5px;
+            color: #cc1231;
+            margin-bottom: 2px;
         }
         
         .report-title {
-            font-size: 18px;
+            font-size: 13px;
             color: #4b5563;
-            margin-bottom: 10px;
+            margin-bottom: 4px;
         }
         
         .service-id {
-            font-size: 14px;
+            font-size: 11px;
             color: #6b7280;
             background: #f3f4f6;
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 3px 10px;
+            border-radius: 12px;
             display: inline-block;
+        }        .section {
+            margin-bottom: 6px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }        .section-title {
+            background: #f8fafc;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 5px 10px;
+            font-weight: bold;
+            font-size: 11px;
+            color: #374151;
+        }
+          .section-content {
+            padding: 8px;
+        }.two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+          .client-equipment-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 10px;
         }
         
-        .section {
-            margin-bottom: 25px;
+        .info-section {
             border: 1px solid #e5e7eb;
-            border-radius: 8px;
+            border-radius: 4px;
             overflow: hidden;
         }
         
-        .section-title {
+        .info-section-header {
             background: #f8fafc;
             border-bottom: 1px solid #e5e7eb;
-            padding: 12px 16px;
+            padding: 6px 10px;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 11px;
             color: #374151;
         }
         
-        .section-content {
-            padding: 16px;
-        }
-        
-        .two-column {
+        .info-section-content {
+            padding: 8px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 6px;
         }
         
         .field {
-            margin-bottom: 12px;
+            margin-bottom: 4px;
         }
         
         .field-label {
             font-weight: 600;
             color: #4b5563;
-            margin-bottom: 2px;
-            font-size: 11px;
+            margin-bottom: 1px;
+            font-size: 8px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
         
         .field-value {
             color: #1f2937;
-            font-size: 13px;
-        }
-        
-        .status-badge {
+            font-size: 10px;
+        }.status-badge {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 8px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
         
         .status-pending { background: #fef3c7; color: #92400e; }
         .status-completed { background: #d1fae5; color: #065f46; }
         .status-waiting { background: #fed7aa; color: #9a3412; }
         .status-response { background: #dbeafe; color: #1e40af; }
-        
-        .parts-table {
+          .parts-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 12px;
-        }
-        
-        .parts-table th,
+            margin-top: 8px;
+        }        .parts-table th,
         .parts-table td {
             border: 1px solid #e5e7eb;
-            padding: 8px;
-            text-align: left;
-        }
-        
-        .parts-table th {
-            background: #f9fafb;
+            padding: 3px 5px;
+            text-align: center;
+            height: 22px;
+        }        .parts-table th {
+            background: white;
             font-weight: 600;
-            font-size: 11px;
+            font-size: 9px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: #4b5563;
-        }
-        
-        .parts-table .code {
+            text-align: center;
+        }        .parts-table .code {
             font-family: 'Courier New', monospace;
-            font-size: 11px;
-            background: #f3f4f6;
-        }
-        
-        .parts-table .number {
-            text-align: right;
-        }
-        
-        .totals-section {
+            font-size: 10px;
+        }.totals-section {
             background: #f8fafc;
             border: 2px solid #e5e7eb;
             border-radius: 8px;
-            padding: 16px;
-            margin-top: 20px;
+            padding: 8px;
+            margin-top: 10px;
+            page-break-inside: avoid;
         }
-        
-        .total-line {
+          .total-line {
             display: flex;
             justify-content: space-between;
-            padding: 6px 0;
+            padding: 3px 0;
             border-bottom: 1px solid #e5e7eb;
+            font-size: 9px;
         }
         
         .total-line:last-child {
             border-bottom: none;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 12px;
             color: #1f2937;
-            padding-top: 12px;
+            padding-top: 6px;
             border-top: 2px solid #2563eb;
-        }
-        
-        .footer {
-            margin-top: 40px;
+        }        .footer {
+            margin-top: 10px;
             border-top: 1px solid #e5e7eb;
-            padding-top: 20px;
+            padding-top: 6px;
             text-align: center;
             color: #6b7280;
-            font-size: 10px;
+            font-size: 7px;
+            page-break-inside: avoid;
         }
-          .notes {
+        
+        .notes {
             background: #fffbeb;
             border: 1px solid #fcd34d;
-            border-radius: 6px;
-            padding: 12px;
+            border-radius: 4px;
+            padding: 8px;
             white-space: pre-wrap;
             font-style: italic;
-        }
-          .repair-description {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            padding: 16px;
-            margin: 20px 0;
-            min-height: 100px;
+            font-size: 8px;
+        }        .repair-description {
+            background: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px;
+            white-space: pre-wrap;
+            margin-top: 8px;
+            font-size: 9px;
+        }margin: 15px 0;
+            min-height: 80px;
         }
         
         .repair-description-title {
@@ -270,71 +280,64 @@ export function PrintReport({ serviceData }: PrintReportProps) {
             color: #374151;
             margin-bottom: 8px;
             font-size: 14px;
-        }
-        
-        .repair-description-content {
+        }        .repair-description-content {
             border: none;
             outline: none;
             width: 100%;
-            min-height: 60px;
+            min-height: 40px;
             font-family: inherit;
-            font-size: 12px;
-            line-height: 1.5;
-            background: transparent;
+            font-size: 11px;
+            line-height: 1.4;
+            background: white;
             resize: none;
-        }
-        
-        .signatures-section {
-            margin-top: 40px;
+        }        .signatures-section {
+            margin-top: 10px;
             page-break-inside: avoid;
+            page-break-after: avoid;
         }
         
         .signatures-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            margin-top: 30px;
+            gap: 20px;
+            margin-top: 15px;
         }
         
         .signature-field {
             border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: 6px;
+            padding: 12px;
             text-align: center;
-            min-height: 100px;
+            min-height: 60px;
         }
         
         .signature-label {
             font-weight: bold;
             color: #374151;
-            margin-bottom: 15px;
-            font-size: 14px;
+            margin-bottom: 8px;
+            font-size: 10px;
         }
-        
-        .signature-line {
+          .signature-line {
             border-bottom: 2px solid #374151;
             width: 80%;
-            margin: 40px auto 10px;
+            margin: 20px auto 6px;
         }
         
         .signature-sublabel {
-            font-size: 10px;
+            font-size: 8px;
             color: #6b7280;
-            margin-top: 5px;
+            margin-top: 3px;
         }
     </style>
 </head>
-<body>
-    <div class="header">
+<body>    <div class="header">
         <div class="company-name">JMPC - Reparações Técnicas</div>
         <div class="report-title">Relatório de Serviço</div>
         <div class="service-id">Serviço Nº ${serviceData.id}</div>
-    </div>
-
-    <div class="two-column">
-        <div class="section">
-            <div class="section-title">Informações do Cliente</div>
-            <div class="section-content">
+    </div>    <div class="client-equipment-section">
+        <div class="info-section">
+            <div class="info-section-header">Informações do Cliente</div>
+            <div class="info-section-content">
                 <div class="field">
                     <div class="field-label">Nome</div>
                     <div class="field-value">${serviceData.cliente.nome}</div>
@@ -350,17 +353,16 @@ export function PrintReport({ serviceData }: PrintReportProps) {
                 <div class="field">
                     <div class="field-label">Morada</div>
                     <div class="field-value">${serviceData.cliente.morada}</div>
-                </div>
-                <div class="field">
+                </div>                <div class="field">
                     <div class="field-label">Tipo</div>
-                    <div class="field-value">${serviceData.cliente.tipo}</div>
+                    <div class="field-value">${serviceData.cliente.tipo.charAt(0).toUpperCase() + serviceData.cliente.tipo.slice(1)}</div>
                 </div>
             </div>
         </div>
 
-        <div class="section">
-            <div class="section-title">Informações do Equipamento</div>
-            <div class="section-content">
+        <div class="info-section">
+            <div class="info-section-header">Informações do Equipamento</div>
+            <div class="info-section-content">
                 <div class="field">
                     <div class="field-label">Tipo</div>
                     <div class="field-value">${serviceData.equipamento.tipo}</div>
@@ -381,7 +383,10 @@ export function PrintReport({ serviceData }: PrintReportProps) {
                     <div class="field-label">Data de Compra</div>
                     <div class="field-value">${serviceData.equipamento.dataCompra ? new Date(serviceData.equipamento.dataCompra).toLocaleDateString('pt-PT') : 'N/A'}</div>
                 </div>
-            </div>
+                <div class="field">
+                    <div class="field-label">Garantia</div>
+                    <div class="field-value">${serviceData.garantia ? 'Sim' : 'Não'}</div>
+                </div>            </div>
         </div>
     </div>
 
@@ -395,7 +400,7 @@ export function PrintReport({ serviceData }: PrintReportProps) {
                     </div>
                     <div class="field">
                         <div class="field-label">Garantia</div>
-                        <div class="field-value">${serviceData.garantia ? `Sim (${serviceData.periodoGarantia || 'N/A'})` : 'Não'}</div>
+                        <div class="field-value">${serviceData.garantia ? 'Sim' : 'Não'}</div>
                     </div>
                 </div>
                 <div>
@@ -403,29 +408,24 @@ export function PrintReport({ serviceData }: PrintReportProps) {
                         <div class="field-label">Data de Entrada</div>
                         <div class="field-value">${new Date(serviceData.dataEntrada).toLocaleDateString('pt-PT')}</div>
                     </div>
-                </div>
-            </div>
-            <div class="field" style="margin-top: 16px;">
+                </div>            </div>
+            <div class="field" style="margin-top: 8px;">
                 <div class="field-label">Problema Reportado</div>
                 <div class="field-value">${serviceData.descricaoProblema}</div>
             </div>
             ${serviceData.notas ? `
-            <div class="field" style="margin-top: 16px;">
+            <div class="field" style="margin-top: 8px;">
                 <div class="field-label">Notas Técnicas</div>
                 <div class="notes">${serviceData.notas}</div>
             </div>
             ` : ''}
         </div>
-    </div>
-
-    ${serviceData.pecas.length > 0 ? `
+    </div>    <!-- Peças Utilizadas - Sempre mostrar 4 linhas -->
     <div class="section">
         <div class="section-title">Peças Utilizadas</div>
-        <div class="section-content">
-            <table class="parts-table">
+        <div class="section-content">            <table class="parts-table">
                 <thead>
                     <tr>
-                        <th>Código</th>
                         <th>Descrição</th>
                         <th>Quantidade</th>
                         <th>Preço Unitário</th>
@@ -433,19 +433,21 @@ export function PrintReport({ serviceData }: PrintReportProps) {
                     </tr>
                 </thead>
                 <tbody>
-                    ${serviceData.pecas.map(part => `
-                    <tr>
-                        <td class="code">${part.codigo}</td>
-                        <td>${part.nome}</td>
-                        <td class="number">${part.quantidade}</td>
-                        <td class="number">${parseFloat(part.precoUnitario).toFixed(2)} €</td>
-                        <td class="number">${parseFloat(part.total).toFixed(2)} €</td>
-                    </tr>
-                    `).join('')}
+                    ${Array.from({length: 4}, (_, index) => {
+                        const part = serviceData.pecas[index];
+                        return `
+                        <tr>
+                            <td>${part ? part.nome : ''}</td>
+                            <td class="number">${part ? part.quantidade : ''}</td>
+                            <td class="number">${part ? parseFloat(part.precoUnitario).toFixed(2) + ' €' : ''}</td>
+                            <td class="number">${part ? parseFloat(part.total).toFixed(2) + ' €' : ''}</td>
+                        </tr>
+                        `;
+                    }).join('')}
                 </tbody>
             </table>
-        </div>    </div>
-    ` : ''}
+        </div>
+    </div>
 
     <div class="section">
         <div class="section-title">Descrição da Reparação</div>
@@ -493,20 +495,17 @@ export function PrintReport({ serviceData }: PrintReportProps) {
                 <div class="signature-label">Cliente</div>
                 <div class="signature-line"></div>
                 <div class="signature-sublabel">
-                    ${serviceData.cliente.nome}<br>
                     Nome e Assinatura
                 </div>
-            </div>
-        </div>
-        <div style="margin-top: 20px; text-align: center; color: #6b7280; font-size: 10px;">
+            </div>        </div>
+        <div style="margin-top: 8px; text-align: center; color: #6b7280; font-size: 8px;">
             <p>Ao assinar este documento, o cliente confirma que ficou a funcionar em perfeitas condições.</p>
         </div>
-    </div>
-
-    <div class="footer">
+    </div>    <div class="footer">
         <p>Este documento foi gerado automaticamente em ${new Date().toLocaleDateString('pt-PT')} às ${new Date().toLocaleTimeString('pt-PT')}</p>
-        <p>JMPC - Reparações Técnicas | Para qualquer questão, contacte-nos</p>
+        <p>JMPC - Reparações Técnicas | Para qualquer questão, contacte-nos: 938263950 ou 961746885</p>
     </div>
+</div>
 
     <script>
         function getStatusClass(status) {
@@ -538,10 +537,18 @@ export function PrintReport({ serviceData }: PrintReportProps) {
     </script>
 </body>
 </html>
-    `
-
+    `    // Write HTML to the window and close it
     printWindow.document.write(printHTML)
     printWindow.document.close()
+    
+    // Auto print and close after printing
+    printWindow.onload = () => {
+      printWindow.focus()
+      printWindow.print()
+      setTimeout(() => {
+        printWindow.close()
+      }, 1000)
+    }
   }
 
   return { handlePrint }

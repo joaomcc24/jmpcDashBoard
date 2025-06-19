@@ -53,16 +53,18 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: serviceId } = await params
-
+  const { id } = await params
+  
   try {
-    await prisma.deslocacao.delete({
-      where: { servicoId: serviceId },
+    await prisma.deslocacao.deleteMany({
+      where: {
+        servicoId: id
+      }
     })
 
     // Update service total value
-    await updateServiceTotal(serviceId)
-
+    await updateServiceTotal(id)
+    
     return NextResponse.json({ message: "Deslocação removida com sucesso" })
   } catch (error) {
     console.error('Erro ao remover deslocação:', error)

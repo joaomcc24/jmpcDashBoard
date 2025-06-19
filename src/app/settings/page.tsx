@@ -39,7 +39,7 @@ export default function SettingsPage() {
     },
     {
       title: "Notificações",
-      description: "Configurar alertas e notificações",
+      description: "Gerir alertas e notificações",
       icon: Bell,
       color: "bg-yellow-100 text-yellow-600",
       items: ["Email", "Push notifications", "Lembretes"],
@@ -112,8 +112,7 @@ export default function SettingsPage() {
                           {item}
                         </div>
                       ))}
-                    </div>
-                    <Button 
+                    </div>                    <Button 
                       variant="outline" 
                       size="sm" 
                       className="w-full" 
@@ -123,7 +122,7 @@ export default function SettingsPage() {
                         if (category.available) router.push(category.route)
                       }}
                     >
-                      {category.available ? "Configurar" : "Em breve"}
+                      {category.available ? "Aceder" : "Em breve"}
                     </Button>
                   </CardContent>
                 </Card>

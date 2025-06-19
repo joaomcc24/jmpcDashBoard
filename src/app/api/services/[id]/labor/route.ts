@@ -54,14 +54,17 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: serviceId } = await params
-
-  try {    await prisma.maoDeObra.delete({
-      where: { servicoId: serviceId },
+  
+  try {
+    await prisma.maoDeObra.deleteMany({
+      where: {
+        servicoId: serviceId
+      }
     })
 
     // Update service total value
     await updateServiceTotal(serviceId)
-
+    
     return NextResponse.json({ message: "Mão de obra removida com sucesso" })
   } catch (error) {
     console.error('Erro ao remover mão de obra:', error)

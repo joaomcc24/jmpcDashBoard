@@ -125,12 +125,14 @@ export default function DashboardPage() {  const [stats, setStats] = useState<Da
       </div>
     )
   }
-
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col lg:ml-0 ml-0">
+        {/* Spacer for mobile header */}
+        <div className="lg:hidden h-16"></div>
+        
         {/* Header */}
         {/* <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-6 shadow-sm">
           <div className="flex flex-1 items-center gap-2">
@@ -146,74 +148,63 @@ export default function DashboardPage() {  const [stats, setStats] = useState<Da
               day: "numeric",
             })}
           </div>
-        </header> */}
-
-        <main className="flex-1 overflow-auto p-1">
+        </header> */}<main className="flex-1 overflow-auto p-6">
           <div className="max-w-7xl mx-auto space-y-6">
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
-              <h2 className="text-2xl font-bold mb-2">Bem-vindo à JMPC</h2>
+              <h2 className="text-xl font-bold mb-2">Bem-vindo à JMPC</h2>
               <p className="text-blue-100">Sistema de Gestão de Serviços Técnicos</p>
-            </div>
-
-            {/* Estatísticas principais */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <Card className="border-0 shadow-sm">
+            </div>            {/* Estatísticas principais */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><Card className="border-0 shadow-sm">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <Users className="h-6 w-6 text-blue-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Total de Clientes</p>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Total de Clientes</p>
                       <p className="text-2xl font-bold text-gray-900">{stats.totalClients}</p>
                     </div>
                   </div>
                 </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-sm">
+              </Card>              <Card className="border-0 shadow-sm">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-green-100 rounded-lg">
                       <Wrench className="h-6 w-6 text-green-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Total de Serviços</p>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Total de Serviços</p>
                       <p className="text-2xl font-bold text-gray-900">{stats.totalServices}</p>
                     </div>
                   </div>
                 </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-sm">
+              </Card>              <Card className="border-0 shadow-sm">
                 <CardContent className="p-6">
-                  <div className="flex items-center gap-3">                    <div className="p-2 bg-yellow-100 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-yellow-100 rounded-lg">
                       <Calendar className="h-6 w-6 text-yellow-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Serviços Esta Semana</p>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Serviços Esta Semana</p>
                       <p className="text-2xl font-bold text-gray-900">{stats.servicesThisWeek}</p>
                     </div>
                   </div>
                 </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-sm">
+              </Card>              <Card className="border-0 shadow-sm">
                 <CardContent className="p-6">
-                  <div className="flex items-center gap-3">                    <div className="p-2 bg-red-100 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-red-100 rounded-lg">
                       <Clock className="h-6 w-6 text-red-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Sem Atualizações</p>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Sem Atualizações</p>
                       <p className="text-2xl font-bold text-gray-900">{stats.servicesWithoutUpdates}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            </div>
-
-            {/* Grid com ações rápidas e serviços recentes */}
-            <div className="grid gap-6 lg:grid-cols-2">
+            </div>            {/* Grid com ações rápidas e serviços recentes */}
+            <div className="grid gap-4 xl:grid-cols-2">
               {/* Ações rápidas */}
               <Card className="border-0 shadow-sm">
                 <CardHeader>
@@ -321,61 +312,59 @@ export default function DashboardPage() {  const [stats, setStats] = useState<Da
                   )}
                 </CardContent>
               </Card>
-            </div>
-
-            {/* Estados dos serviços */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            </div>            {/* Estados dos serviços */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Card className="border-0 shadow-sm">
-                <CardContent className="p-6">
+                <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-yellow-100 rounded-lg">
-                      <Clock className="h-6 w-6 text-yellow-600" />
+                      <Clock className="h-5 w-5 text-yellow-600" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-600">Pendentes</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.pendingServices}</p>
+                      <p className="text-xl font-bold text-gray-900">{stats.pendingServices}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="border-0 shadow-sm">
-                <CardContent className="p-6">
+                <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-orange-100 rounded-lg">
-                      <Package className="h-6 w-6 text-orange-600" />
+                      <Package className="h-5 w-5 text-orange-600" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-600">Aguarda Peça</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.waitingPartServices}</p>
+                      <p className="text-xl font-bold text-gray-900">{stats.waitingPartServices}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="border-0 shadow-sm">
-                <CardContent className="p-6">
+                <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
-                      <Package className="h-6 w-6 text-blue-600" />
+                      <Package className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-600">Resposta da Marca</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.brandResponseServices}</p>
+                      <p className="text-xl font-bold text-gray-900">{stats.brandResponseServices}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="border-0 shadow-sm">
-                <CardContent className="p-6">
+                <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-green-100 rounded-lg">
-                      <CheckCircle className="h-6 w-6 text-green-600" />
+                      <CheckCircle className="h-5 w-5 text-green-600" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-600">Concluídos</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.completedServices}</p>
+                      <p className="text-xl font-bold text-gray-900">{stats.completedServices}</p>
                     </div>
                   </div>
                 </CardContent>
