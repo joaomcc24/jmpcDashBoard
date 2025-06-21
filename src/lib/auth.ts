@@ -1,4 +1,3 @@
-// import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 // import bcrypt from "bcryptjs"
 // import { PrismaClient } from "@prisma/client"
@@ -16,16 +15,14 @@ export const authOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           return null
-        }
-
-        // Temporariamente simplificado para resolver erro de compilação
+        }        // Credenciais de login personalizáveis
         try {
-          // Verificar se credentials são válidas
+          // ⚠️ TROCAR ESTAS CREDENCIAIS AQUI:
           if (credentials.email === "admin@jmpc.pt" && credentials.password === "admin123456") {
             return {
               id: "1",
-              email: "admin@jmpc.pt",
-              name: "Administrador JMPC",
+              email: "admin@jmpc.pt",        // ← Trocar email aqui
+              name: "Administrador JMPC",    // ← Trocar nome aqui  
               role: "admin"
             }
           }
@@ -35,10 +32,9 @@ export const authOptions = {
           return null
         }
       }
-    })
-  ],
+    })  ],
   session: {
-    strategy: "jwt"
+    strategy: "jwt" as const
   },
   pages: {
     signIn: "/login"
