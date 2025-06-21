@@ -1,28 +1,23 @@
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function NotFound() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-gray-900">
-            Página não encontrada
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-center space-y-4">
-          <p className="text-gray-600">
-            A página que procura não existe ou foi movida.
-          </p>
-          <div className="text-6xl font-bold text-gray-300">404</div>
-          <Link href="/">
-            <Button className="w-full">
-              Voltar ao Início
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
+      <div className="text-center max-w-md mx-auto p-8">
+        <div className="text-6xl font-bold text-gray-300 mb-4">404</div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">
+          Página não encontrada
+        </h1>
+        <p className="text-gray-600 mb-8">
+          A página que procura não existe ou foi movida.
+        </p>
+        <Link 
+          href="/"
+          className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Voltar ao Início
+        </Link>
+      </div>
     </div>
   )
 }

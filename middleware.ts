@@ -3,19 +3,45 @@ import { NextResponse } from "next/server"
 
 export default withAuth(
   function middleware(req) {
-    // Middleware adicional pode ser adicionado aqui
-    return NextResponse.next()
+    // Verificar se a URL é válida
+    try {
+      const pathname = req.nextUrl.pathname
+      
+      // Permitir páginas públicas
+      if (pathname === "/" || 
+          pathname === "/login" || 
+          pathname.startsWith("/api/auth") ||
+          pathname.startsWith("/_next") ||
+          pathname.startsWith("/favicon")) {
+        return NextResponse.next()
+      }
+
+      // Verificar se há token para páginas protegidas
+      const token = req.nextauth.token
+      if (!token) {
+        return NextResponse.redirect(new URL("/login", req.url))
+      }
+
+      return NextResponse.next()
+    } catch (error) {
+      console.error("Middleware error:", error)
+      return NextResponse.redirect(new URL("/", req.url))
+    }
   },
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        // Permitir acesso às páginas públicas
-        if (req.nextUrl.pathname === "/" || 
-            req.nextUrl.pathname === "/login" ||
-            req.nextUrl.pathname.startsWith("/api/auth")) {
+        // Simplificar a lógica de autorização
+        const pathname = req.nextUrl.pathname
+        
+        // Páginas sempre permitidas
+        if (pathname === "/" || 
+            pathname === "/login" || 
+            pathname.startsWith("/api/auth")) {
           return true
         }
-        // Verificar se o usuário está autenticado para páginas protegidas
+        
+        // Para outras páginas, verificar token
         return !!token
       }
     },
@@ -28,13 +54,12 @@ export default withAuth(
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
+     * Match all request paths except:
      * - api/auth (auth endpoints)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public (public files)
      */
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|public).*)",
+    "/((?!api/auth|_next/static|_next/image|favicon.ico).*)",
   ]
 }
