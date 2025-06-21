@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Configurações para produção
+  serverExternalPackages: ['@prisma/client', 'bcryptjs'],
+  // Permitir imagens de domínios externos se necessário
+  images: {
+    domains: []
+  }
 };
 
 export default nextConfig;
