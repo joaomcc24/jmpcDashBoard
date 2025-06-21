@@ -1,22 +1,56 @@
-import Link from 'next/link'
-
+/* eslint-disable @next/next/no-html-link-for-pages */
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center max-w-md mx-auto p-8">
-        <div className="text-6xl font-bold text-gray-300 mb-4">404</div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#f9fafb',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
+      <div style={{
+        textAlign: 'center',
+        maxWidth: '400px',
+        padding: '2rem'
+      }}>
+        <div style={{
+          fontSize: '4rem',
+          fontWeight: 'bold',
+          color: '#d1d5db',
+          marginBottom: '1rem'
+        }}>
+          404
+        </div>
+        <h1 style={{
+          fontSize: '1.5rem',
+          fontWeight: 'bold',
+          color: '#111827',
+          marginBottom: '1rem'
+        }}>
           Página não encontrada
         </h1>
-        <p className="text-gray-600 mb-8">
+        <p style={{
+          color: '#6b7280',
+          marginBottom: '2rem'
+        }}>
           A página que procura não existe ou foi movida.
         </p>
-        <Link 
-          href="/"
-          className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Voltar ao Início
-        </Link>
+        <p>
+          <a 
+            href="/"
+            style={{
+              display: 'inline-block',
+              backgroundColor: '#2563eb',
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '0.5rem',
+              textDecoration: 'none'
+            }}
+          >
+            Voltar ao Início
+          </a>
+        </p>
       </div>
     </div>
   )

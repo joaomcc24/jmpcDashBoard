@@ -38,9 +38,5 @@ export const authOptions = {
   },  pages: {
     signIn: "/login"
   },
-  secret: process.env.NEXTAUTH_SECRET,
-  // Garantir que a URL seja válida em produção
-  ...(process.env.NEXTAUTH_URL && { 
-    url: process.env.NEXTAUTH_URL 
-  }),
+  secret: process.env.NEXTAUTH_SECRET
 }
