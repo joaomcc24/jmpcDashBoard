@@ -78,7 +78,7 @@ export default function LoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@jmpc.pt"
+                    placeholder="Insira o seu email aqui..."
                     required
                     disabled={isLoading}
                     className="pl-10 h-11 border-gray-300 focus:border-gray-900 focus:ring-gray-900"

@@ -1,37 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
-    // Por agora, vamos usar um user ID fixo (mais tarde será do session/auth)
-    const userId = "default-user"
-      let userSettings = await prisma.userSettings.findUnique({
+    // Verificar autenticação
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+    }
+
+    // Buscar o utilizador na base de dados
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'Utilizador não encontrado' }, { status: 404 })
+    }
+
+    const userId = user.id
+    let userSettings = await prisma.userSettings.findUnique({
       where: { userId }
     })
     
-    // Se não existir, criar utilizador e configurações por defeito
+    // Se não existir configurações, criar com valores padrão
     if (!userSettings) {
-      // Primeiro verificar se o utilizador existe
-      let user = await prisma.user.findUnique({
-        where: { id: userId }
-      })
-      
-      // Se não existir, criar o utilizador
-      if (!user) {
-        user = await prisma.user.create({
-          data: {
-            id: userId,
-            email: "admin@jmpc.pt",
-            password: "hashed_password", // Em produção seria hash real
-            name: "Administrador JMPC"
-          }
-        })
-      }
-      
-      // Criar configurações
       userSettings = await prisma.userSettings.create({
         data: {
-          userId
+          userId,
+          theme: "system",
+          colorScheme: "blue",
+          fontSize: "medium",
+          compactMode: false,
+          emailNotifications: true,
+          pushNotifications: true,
+          emailFrequency: "immediate",
+          quietHours: false,
+          quietStart: "22:00",
+          quietEnd: "08:00",
+          weekendNotifications: true,
+          emailNewService: true,
+          emailServiceUpdates: true,
+          emailClientMessages: false,
+          emailSystemAlerts: true,
+          emailDailyReport: false,
+          emailWeeklyReport: true,
+          pushUrgentServices: true,
+          pushServiceCompleted: false,
+          pushClientNotifications: true,
+          pushSystemAlerts: true,
+          pushReminders: true
         }
       })
     }
@@ -48,8 +68,23 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    // Verificar autenticação
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+    }
+
+    // Buscar o utilizador na base de dados
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'Utilizador não encontrado' }, { status: 404 })
+    }
+
     const body = await request.json()
-    const userId = "default-user" // Por agora fixo
+    const userId = user.id
     
     const userSettings = await prisma.userSettings.upsert({
       where: { userId },
