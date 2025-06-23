@@ -1,17 +1,21 @@
 import { withAuth } from "next-auth/middleware"
 
-export default withAuth({
-  pages: {
-    signIn: "/login",
+export default withAuth(
+  function middleware(req) {
+    // Middleware adicional pode ser adicionado aqui
   },
-})
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token
+    },
+    pages: {
+      signIn: "/login",
+    },
+  }
+)
 
 export const config = {
   matcher: [
-    "/dashboard/:path*",
-    "/services/:path*", 
-    "/clients/:path*",
-    "/inventory/:path*",
-    "/settings/:path*"
+    "/((?!api/auth|login|_next/static|_next/image|favicon.ico).*)",
   ]
 }
