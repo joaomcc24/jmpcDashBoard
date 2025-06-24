@@ -7,21 +7,28 @@ async function main() {
   console.log('🌱 Configurando utilizador administrador...')
 
   try {
-    // Hash da password com alta segurança (12 rounds)
-    const adminPasswordHash = await bcrypt.hash('Jmpc132546', 12)
+    // Obter credenciais das variáveis de ambiente
+    const adminEmail = process.env.ADMIN_EMAIL
+    const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH
+    
+    if (!adminEmail || !adminPasswordHash) {
+      console.error('❌ ADMIN_EMAIL e ADMIN_PASSWORD_HASH devem estar definidos no .env')
+      console.log('💡 Configure as variáveis de ambiente antes de executar o seed')
+      process.exit(1)
+    }
     
     // Verificar se já existe um admin
     const existingAdmin = await prisma.user.findUnique({
       where: {
-        email: 'geral@jmpcsat.pt'
+        email: adminEmail
       }
     })
 
     if (existingAdmin) {
-      console.log('ℹ️  Admin já existe, atualizando password...')
+      console.log('ℹ️  Admin já existe, atualizando dados...')
       await prisma.user.update({
         where: {
-          email: 'geral@jmpcsat.pt'
+          email: adminEmail
         },
         data: {
           password: adminPasswordHash,
@@ -34,7 +41,7 @@ async function main() {
       console.log('👤 Criando novo utilizador admin...')
       await prisma.user.create({
         data: {
-          email: 'geral@jmpcsat.pt',
+          email: adminEmail,
           password: adminPasswordHash,
           name: 'Administrador JMPC',
           role: 'admin'
@@ -45,10 +52,8 @@ async function main() {
 
     console.log('')
     console.log('🎉 Configuração concluída!')
-    console.log('')
-    console.log('📋 Credenciais de acesso:')
-    console.log('   Email: geral@jmpcsat.pt')
-    console.log('   Password: Jmpc132546')
+    console.log(`📧 Email configurado: ${adminEmail}`)
+    console.log('🔒 Password hash configurado com segurança')
     console.log('')
 
   } catch (error) {
