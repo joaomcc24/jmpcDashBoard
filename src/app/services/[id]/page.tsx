@@ -784,7 +784,7 @@ const fetchServiceData = async () => {
                                     variant="outline"
                                     size="sm"
                                     className="mt-2"
-                                    onClick={() => window.open(foto.url, '_blank')}
+                                    onClick={() => foto.url && window.open(foto.url, '_blank')}
                                   >
                                     Abrir PDF
                                   </Button>
