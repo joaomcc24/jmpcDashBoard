@@ -44,7 +44,7 @@ export function Sidebar() {
 
       {/* Mobile menu overlay */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={closeMobileMenu} />
+        <div className="lg:hidden fixed inset-0 z-50 bg-white bg-opacity-50" onClick={closeMobileMenu} />
       )}
 
       {/* Desktop sidebar and mobile menu */}

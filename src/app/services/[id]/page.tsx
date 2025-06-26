@@ -366,7 +366,7 @@ const fetchServiceData = async () => {
     <div className="flex min-h-screen">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-      <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
+      <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
           <Button 
             variant="outline" 
             size="sm" 
@@ -776,14 +776,41 @@ const fetchServiceData = async () => {
                         <div key={foto.id || index} className="space-y-2">
                           <div className="aspect-square bg-muted rounded-lg flex items-center justify-center relative group">
                             {foto.url ? (
-                              <img 
-                                src={foto.url} 
-                                alt={foto.descricao || `Foto ${index + 1}`}
-                                className="w-full h-full object-cover rounded-lg"
-                              />
+                              foto.url.toLowerCase().endsWith('.pdf') ? (
+                                <div className="flex flex-col items-center justify-center p-4 text-center">
+                                  <FileText className="h-12 w-12 text-blue-600 mb-2" />
+                                  <p className="text-sm font-medium text-gray-700">Documento PDF</p>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="mt-2"
+                                    onClick={() => window.open(foto.url, '_blank')}
+                                  >
+                                    Abrir PDF
+                                  </Button>
+                                </div>
+                              ) : (
+                                <img 
+                                  src={foto.url} 
+                                  alt={foto.descricao || `Foto ${index + 1}`}
+                                  className="w-full h-full object-cover rounded-lg"
+                                  onError={(e) => {
+                                    console.error('Erro ao carregar imagem:', foto.url);
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                                  }}
+                                />
+                              )
                             ) : (
                               <ImageIcon className="h-12 w-12 text-muted-foreground" />
                             )}
+                            
+                            {/* Fallback para imagem quebrada */}
+                            <div className="hidden flex-col items-center justify-center p-4 text-center">
+                              <ImageIcon className="h-12 w-12 text-red-400 mb-2" />
+                              <p className="text-sm text-red-600">Erro ao carregar</p>
+                              <p className="text-xs text-gray-500">{foto.url}</p>
+                            </div>
                             
                             {/* Botão de remover foto */}
                             <Button
@@ -796,7 +823,14 @@ const fetchServiceData = async () => {
                             </Button>
                           </div>
                           <div className="space-y-1">
-                            <p className="text-sm font-medium">{foto.descricao || `Foto ${index + 1}`}</p>
+                            <p className="text-sm font-medium">
+                              {foto.descricao || `Foto ${index + 1}`}
+                              {foto.descricao === 'Documento de Compra' && (
+                                <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  Garantia
+                                </span>
+                              )}
+                            </p>
                             <p className="text-xs text-muted-foreground">
                               Adicionada em {new Date(foto.createdAt).toLocaleDateString('pt-PT')}
                             </p>

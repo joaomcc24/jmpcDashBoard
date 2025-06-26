@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { SERVICE_STATES, SERVICE_STATE_LABELS, SERVICE_STATE_COLORS } from "@/lib/constants"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
 
 interface DashboardStats {
   totalClients: number
@@ -34,7 +35,8 @@ interface RecentService {
   }
 }
 
-export default function DashboardPage() {  const [stats, setStats] = useState<DashboardStats>({
+export default function DashboardPage() {
+  const [stats, setStats] = useState<DashboardStats>({
     totalClients: 0,
     totalServices: 0,
     servicesThisWeek: 0,
@@ -53,7 +55,8 @@ export default function DashboardPage() {  const [stats, setStats] = useState<Da
         
         const [clientsRes, servicesRes] = await Promise.all([fetch("/api/clients"), fetch("/api/services")])
 
-        if (clientsRes.ok && servicesRes.ok) {          const clients = await clientsRes.json()
+        if (clientsRes.ok && servicesRes.ok) {
+          const clients = await clientsRes.json()
           const services = await servicesRes.json()
 
           const pendingServices = services.filter((s: any) => s.estado === SERVICE_STATES.PENDING).length
@@ -127,29 +130,32 @@ export default function DashboardPage() {  const [stats, setStats] = useState<Da
     )
   }
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
+    <ProtectedRoute>
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
 
-      <div className="flex-1 flex flex-col lg:ml-0 ml-0">
-        {/* Spacer for mobile header */}
-        <div className="lg:hidden h-16"></div>
-        
-        {/* Header */}
-        {/* <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-6 shadow-sm">
-          <div className="flex flex-1 items-center gap-2">
-            <TrendingUp className="h-6 w-6 text-blue-600" />
-            <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Calendar className="h-4 w-4" />
-            {new Date().toLocaleDateString("pt-PT", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </div>
-        </header> */}<main className="flex-1 overflow-auto p-6">
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <header 
+            className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-6 shadow-sm"
+            style={{ minHeight: "64px", maxHeight: "64px" }}
+          >
+            <div className="flex flex-1 items-center gap-2">
+              <TrendingUp className="h-6 w-6 text-blue-600" />
+              <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Calendar className="h-4 w-4" />
+              {new Date().toLocaleDateString("pt-PT", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </div>
+          </header>
+
+          <main className="flex-1 overflow-auto p-6">
           <div className="max-w-7xl mx-auto space-y-6">
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
               <h2 className="text-xl font-bold mb-2">Bem-vindo à JMPC</h2>
@@ -374,5 +380,6 @@ export default function DashboardPage() {  const [stats, setStats] = useState<Da
         </main>
       </div>
     </div>
+    </ProtectedRoute>
   )
 }

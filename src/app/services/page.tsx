@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { SERVICE_STATES, SERVICE_STATE_LABELS, SERVICE_STATE_COLORS } from "@/lib/constants"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
 
 interface Service {
   id: string
@@ -130,13 +131,17 @@ export default function ServicesPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
+    <ProtectedRoute>
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
 
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-6 shadow-sm">
-          <div className="flex flex-1 items-center gap-2">
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <header 
+            className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-6 shadow-sm"
+            style={{ minHeight: "64px", maxHeight: "64px" }}
+          >
+            <div className="flex flex-1 items-center gap-2">
             <Wrench className="h-6 w-6 text-blue-600" />
             <h1 className="text-xl font-semibold text-gray-900">Gestão de Serviços</h1>
           </div>          <Button 
@@ -353,5 +358,6 @@ export default function ServicesPage() {
         </main>
       </div>
     </div>
+    </ProtectedRoute>
   )
 }

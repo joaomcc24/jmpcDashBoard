@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Save, X } from 'lucide-react'
+import { ArrowLeft, Save, X, Upload, File } from 'lucide-react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -46,6 +46,7 @@ export default function EditServicePage() {
   const router = useRouter()
   const params = useParams()
   const [service, setService] = useState<ServiceData | null>(null)
+  const [documentoCompraFile, setDocumentoCompraFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState({
@@ -53,8 +54,42 @@ export default function EditServicePage() {
     descricaoProblema: '',
     tecnico: '',
     garantia: false,
-    notas: ''
+    notas: '',
+    dataCompra: '',
+    documentoCompra: '',
+    // Dados do equipamento editáveis
+    equipamentoTipo: '',
+    equipamentoMarca: '',
+    equipamentoModelo: '',
+    equipamentoNumeroSerie: ''
   })
+  
+  // Tipos de equipamento hardcoded
+  const equipmentTypes = [
+    "Frigorífico",
+    "Máquina de Lavar Roupa",
+    "Máquina de Lavar Louça",
+    "Esquentador",
+    "Forno",
+    "Fogão",
+    "Placa",
+    "Arca",
+  ]
+
+  // Marcas hardcoded
+  const equipmentBrands = [
+    "Samsung",
+    "LG",
+    "Bosch",
+    "Siemens",
+    "Whirlpool",
+    "Electrolux",
+    "Indesit",
+    "Hotpoint",
+    "Candy",
+    "Beko",
+  ]
+  
   const technicians = [
     { id: "1", nome: "Diogo Cardoso" },
     { id: "2", nome: "Jorge Cardoso" },
@@ -69,12 +104,22 @@ export default function EditServicePage() {
       const response = await fetch(`/api/services/${params.id}`)
       if (response.ok) {        const serviceData = await response.json()
         setService(serviceData)
+        
+        // Verificar se já existe documento de compra nas fotos
+        const documentoCompraFoto = serviceData.fotos?.find((foto: any) => foto.descricao === 'Documento de Compra')
+        
         setFormData({
           tipo: serviceData.tipo || '',
           descricaoProblema: serviceData.descricaoProblema || '',
           tecnico: serviceData.tecnico || '',
           garantia: serviceData.garantia || false,
-          notas: serviceData.notas || ''
+          notas: serviceData.notas || '',
+          dataCompra: serviceData.equipamento.dataCompra ? serviceData.equipamento.dataCompra.split('T')[0] : '',
+          documentoCompra: documentoCompraFoto ? 'Documento já anexado (ver aba Fotos)' : '',
+          equipamentoTipo: serviceData.equipamento.tipo || '',
+          equipamentoMarca: serviceData.equipamento.marca || '',
+          equipamentoModelo: serviceData.equipamento.modelo || '',
+          equipamentoNumeroSerie: serviceData.equipamento.numeroSerie || ''
         })
       }
     } catch (error) {
@@ -96,15 +141,71 @@ export default function EditServicePage() {
     setSaving(true)
 
     try {
+      // Separar dados do equipamento (incluindo dataCompra) dos dados do serviço
+      const {
+        equipamentoTipo,
+        equipamentoMarca,
+        equipamentoModelo,
+        equipamentoNumeroSerie,
+        dataCompra,
+        documentoCompra,
+        ...serviceData
+      } = formData
+
+      // Criar payload com dados do equipamento separados
+      const payload = {
+        ...serviceData,
+        equipamentoTipo,
+        equipamentoMarca,
+        equipamentoModelo,
+        equipamentoNumeroSerie,
+        equipamentoDataCompra: dataCompra || null
+      }
+
       const response = await fetch(`/api/services/${params.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       })
 
       if (response.ok) {
+        // Se há documento de compra para fazer upload, fazer upload como foto
+        if (documentoCompraFile && formData.garantia) {
+          const formDataPhoto = new FormData()
+          formDataPhoto.append('photo', documentoCompraFile)
+          formDataPhoto.append('description', 'Documento de Compra')
+          formDataPhoto.append('serviceId', params.id as string)
+          
+          const photoResponse = await fetch(`/api/services/${params.id}/photos`, {
+            method: 'POST',
+            body: formDataPhoto,
+          })
+          
+          if (photoResponse.ok && documentoCompraFile.type === 'application/pdf') {
+            // Se for PDF, tentar gerar prévia
+            try {
+              const { generatePdfPreview } = await import('@/utils/pdfPreview')
+              const previewFile = await generatePdfPreview(documentoCompraFile)
+              
+              if (previewFile) {
+                const previewFormData = new FormData()
+                previewFormData.append('photo', previewFile)
+                previewFormData.append('description', 'Documento de Compra (Prévia)')
+                previewFormData.append('serviceId', params.id as string)
+                
+                await fetch(`/api/services/${params.id}/photos`, {
+                  method: 'POST',
+                  body: previewFormData,
+                })
+              }
+            } catch (previewError) {
+              console.log('Não foi possível gerar prévia do PDF:', previewError)
+            }
+          }
+        }
+
         router.push(`/services/${params.id}`)
       } else {
         console.error('Erro ao atualizar serviço')
@@ -148,11 +249,8 @@ export default function EditServicePage() {
     <div className="flex min-h-screen">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col lg:ml-0 ml-0">
-        {/* Spacer for mobile header */}
-        <div className="lg:hidden h-16"></div>
-        
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6 lg:top-0 top-16">
+      <div className="flex-1 flex flex-col">
+        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
           <Button variant="ghost" size="sm" onClick={() => router.back()} className="gap-1">
             <ArrowLeft className="h-4 w-4" />
             Voltar
@@ -197,7 +295,7 @@ export default function EditServicePage() {
               </CardContent>
             </Card>
 
-            {/* Informações do Equipamento (readonly) */}
+            {/* Informações do Equipamento */}
             <Card>
               <CardHeader>
                 <CardTitle>Informações do Equipamento</CardTitle>
@@ -205,20 +303,52 @@ export default function EditServicePage() {
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <Label>Tipo</Label>
-                    <Input value={service.equipamento.tipo} readOnly className="bg-gray-50" />
+                    <Label htmlFor="equipamentoTipo">Tipo de Equipamento</Label>
+                    <Select onValueChange={(value) => handleInputChange("equipamentoTipo", value)} value={formData.equipamentoTipo}>
+                      <SelectTrigger className="bg-white">
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border shadow-lg">
+                        {equipmentTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
-                    <Label>Marca</Label>
-                    <Input value={service.equipamento.marca} readOnly className="bg-gray-50" />
+                    <Label htmlFor="equipamentoMarca">Marca</Label>
+                    <Select onValueChange={(value) => handleInputChange("equipamentoMarca", value)} value={formData.equipamentoMarca}>
+                      <SelectTrigger className="bg-white">
+                        <SelectValue placeholder="Selecione a marca" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border shadow-lg">
+                        {equipmentBrands.map((brand) => (
+                          <SelectItem key={brand} value={brand}>
+                            {brand}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
-                    <Label>Modelo</Label>
-                    <Input value={service.equipamento.modelo} readOnly className="bg-gray-50" />
+                    <Label htmlFor="equipamentoModelo">Modelo</Label>
+                    <Input 
+                      id="equipamentoModelo"
+                      value={formData.equipamentoModelo} 
+                      onChange={(e) => handleInputChange("equipamentoModelo", e.target.value)}
+                      placeholder="Modelo do equipamento"
+                    />
                   </div>
                   <div>
-                    <Label>Número de Série</Label>
-                    <Input value={service.equipamento.numeroSerie || 'N/A'} readOnly className="bg-gray-50" />
+                    <Label htmlFor="equipamentoNumeroSerie">Número de Série</Label>
+                    <Input 
+                      id="equipamentoNumeroSerie"
+                      value={formData.equipamentoNumeroSerie} 
+                      onChange={(e) => handleInputChange("equipamentoNumeroSerie", e.target.value)}
+                      placeholder="Número de série (opcional)"
+                    />
                   </div>
                 </div>
               </CardContent>
@@ -268,6 +398,80 @@ export default function EditServicePage() {
                   />
                   <Label htmlFor="garantia">Serviço em garantia</Label>
                 </div>
+
+                {/* Campos de garantia - só aparecem quando a checkbox está marcada */}
+                {formData.garantia && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                      {/* Data de Compra */}
+                      <div className="space-y-2">
+                        <Label htmlFor="dataCompra">Data de Compra</Label>
+                        <Input
+                          id="dataCompra"
+                          type="date"
+                          value={formData.dataCompra}
+                          onChange={(e) => handleInputChange("dataCompra", e.target.value)}
+                        />
+                      </div>                              {/* Documento de Compra */}
+                              <div className="space-y-2">
+                                <Label htmlFor="documentoCompra">Documento de Compra (opcional)</Label>
+                                {formData.documentoCompra && formData.documentoCompra.includes('já anexado') ? (
+                                  <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <File className="h-4 w-4 text-blue-600" />
+                                    <span className="text-sm text-blue-700 flex-1">Documento já anexado (ver aba Fotos)</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      onClick={() => document.getElementById('documentoCompraFile')?.click()}
+                                      className="flex items-center gap-2 bg-gray-800 text-white hover:bg-gray-700 hover:text-white"
+                                    >
+                                      <Upload className="h-4 w-4" />
+                                      Anexar Ficheiro
+                                    </Button>
+                                    <input
+                                      id="documentoCompraFile"
+                                      type="file"
+                                      accept="image/*,.pdf"
+                                      className="hidden"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0]
+                                        if (file) {
+                                          setDocumentoCompraFile(file)
+                                          handleInputChange("documentoCompra", file.name)
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                )}
+                                <p className="text-xs text-gray-500">
+                                  Formatos aceites: JPG, PNG, PDF (máximo 10MB)
+                                </p>
+                              </div>
+                    </div>
+
+                    {/* Preview do ficheiro anexado - fora do grid */}
+                    {documentoCompraFile && (
+                      <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <File className="h-4 w-4 text-green-600" />
+                        <span className="text-sm text-green-700 flex-1">{documentoCompraFile.name}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setDocumentoCompraFile(null)
+                            handleInputChange("documentoCompra", "")
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label htmlFor="descricaoProblema">Descrição do Problema</Label>

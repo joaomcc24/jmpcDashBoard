@@ -72,7 +72,10 @@ export default function SettingsPage() {
 
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-6 shadow-sm">
+        <header 
+          className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-6 shadow-sm"
+          style={{ minHeight: "64px", maxHeight: "64px" }}
+        >
           <div className="flex flex-1 items-center gap-2">
             <Settings className="h-6 w-6 text-blue-600" />
             <h1 className="text-xl font-semibold text-gray-900">Definições</h1>

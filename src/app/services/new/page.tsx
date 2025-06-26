@@ -194,6 +194,59 @@ export default function NewServicePage() {
 
       if (response.ok) {
         const newService = await response.json()
+        
+        // Se há documento de compra para fazer upload, fazer upload como foto
+        if (documentoCompraFile && formData.garantia) {
+          try {
+            const formDataPhoto = new FormData()
+            formDataPhoto.append('photo', documentoCompraFile)
+            formDataPhoto.append('description', 'Documento de Compra')
+            formDataPhoto.append('serviceId', newService.id)
+            
+            const photoResponse = await fetch(`/api/services/${newService.id}/photos`, {
+              method: 'POST',
+              body: formDataPhoto,
+            })
+            
+            if (!photoResponse.ok) {
+              const errorData = await photoResponse.json()
+              console.error('Erro ao fazer upload do documento:', errorData)
+              alert('Serviço criado, mas houve erro ao anexar o documento de compra: ' + (errorData.error || 'Erro desconhecido'))
+            } else {
+              console.log('Documento de compra anexado com sucesso')
+              
+              // Se for PDF, tentar gerar prévia
+              if (documentoCompraFile.type === 'application/pdf') {
+                try {
+                  const { generatePdfPreview } = await import('@/utils/pdfPreview')
+                  const previewFile = await generatePdfPreview(documentoCompraFile)
+                  
+                  if (previewFile) {
+                    const previewFormData = new FormData()
+                    previewFormData.append('photo', previewFile)
+                    previewFormData.append('description', 'Documento de Compra (Prévia)')
+                    previewFormData.append('serviceId', newService.id)
+                    
+                    const previewResponse = await fetch(`/api/services/${newService.id}/photos`, {
+                      method: 'POST',
+                      body: previewFormData,
+                    })
+                    
+                    if (previewResponse.ok) {
+                      console.log('Prévia PNG gerada e anexada com sucesso')
+                    }
+                  }
+                } catch (previewError) {
+                  console.log('Não foi possível gerar prévia, mas PDF foi anexado:', previewError)
+                }
+              }
+            }
+          } catch (uploadError) {
+            console.error('Erro no upload do documento:', uploadError)
+            alert('Serviço criado, mas houve erro ao anexar o documento de compra')
+          }
+        }
+        
         router.push(`/services/${newService.id}`)
       } else {
         const error = await response.json()
@@ -314,11 +367,8 @@ export default function NewServicePage() {
     <div className="flex min-h-screen">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col lg:ml-0 ml-0">
-        {/* Spacer for mobile header */}
-        <div className="lg:hidden h-16"></div>
-        
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6 lg:top-0 top-16">
+      <div className="flex-1 flex flex-col">
+        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
           <Button variant="ghost" size="sm" onClick={() => router.back()} className="gap-1">
             <ArrowLeft className="h-4 w-4" />
             Voltar

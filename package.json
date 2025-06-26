@@ -1,7 +1,8 @@
 {
   "name": "jmpc-dashboard",
   "version": "0.1.0",
-  "private": true,  "scripts": {
+  "private": true,
+  "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
@@ -24,6 +25,7 @@
     "@radix-ui/react-tabs": "^1.1.9",
     "@reduxjs/toolkit": "^2.7.0",
     "@types/bcryptjs": "^2.4.6",
+    "@types/next-auth": "^3.13.0",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -32,6 +34,8 @@
     "next": "^15.2.5",
     "next-auth": "^4.24.11",
     "next-themes": "^0.4.6",
+    "pdf2pic": "^3.2.0",
+    "pdfjs-dist": "^5.3.31",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-redux": "^9.2.0",

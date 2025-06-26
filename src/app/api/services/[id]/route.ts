@@ -50,20 +50,58 @@ export async function PUT(
   try {
     const body = await request.json()
     
-    const service = await prisma.servico.update({
-      where: {
-        id: id,
-      },
-      data: body,
-      include: {
-        cliente: true,
-        equipamento: true,
-        historico: true,
-        fotos: true,
-        pecas: true,
-        maoDeObra: true,
-        deslocacao: true,
+    // Separar dados do equipamento dos dados do serviço
+    const {
+      equipamentoTipo,
+      equipamentoMarca,
+      equipamentoModelo,
+      equipamentoNumeroSerie,
+      equipamentoDataCompra,
+      ...serviceData
+    } = body
+    
+    // Atualizar usando transação para garantir consistência
+    const service = await prisma.$transaction(async (tx) => {
+      // Primeiro, buscar o serviço para obter o ID do equipamento
+      const currentService = await tx.servico.findUnique({
+        where: { id },
+        include: { equipamento: true }
+      })
+      
+      if (!currentService) {
+        throw new Error("Serviço não encontrado")
       }
+      
+      // Atualizar equipamento se houver dados
+      if (equipamentoTipo || equipamentoMarca || equipamentoModelo || equipamentoNumeroSerie !== undefined || equipamentoDataCompra !== undefined) {
+        await tx.equipamento.update({
+          where: { id: currentService.equipamento.id },
+          data: {
+            ...(equipamentoTipo && { tipo: equipamentoTipo }),
+            ...(equipamentoMarca && { marca: equipamentoMarca }),
+            ...(equipamentoModelo && { modelo: equipamentoModelo }),
+            ...(equipamentoNumeroSerie !== undefined && { numeroSerie: equipamentoNumeroSerie || null }),
+            ...(equipamentoDataCompra !== undefined && { dataCompra: equipamentoDataCompra ? new Date(equipamentoDataCompra) : null }),
+          }
+        })
+      }
+      
+      // Atualizar serviço
+      const updatedService = await tx.servico.update({
+        where: { id },
+        data: serviceData,
+        include: {
+          cliente: true,
+          equipamento: true,
+          historico: true,
+          fotos: true,
+          pecas: true,
+          maoDeObra: true,
+          deslocacao: true,
+        }
+      })
+      
+      return updatedService
     })
     
     return NextResponse.json(service)
