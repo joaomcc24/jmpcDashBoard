@@ -110,10 +110,7 @@ export default function ClientsPage() {
       return
     }
 
-    if (!clientData.email.trim()) {
-      alert("Email é obrigatório")
-      return
-    }
+    // Email agora é opcional - removida validação obrigatória
 
     setSavingClient(true)
 
@@ -398,10 +395,12 @@ export default function ClientsPage() {
                                 <span>{client.telefone}</span>
                               </div>
 
-                              <div className="flex items-center gap-2 text-gray-600">
-                                <Mail className="h-4 w-4" />
-                                <span>{client.email}</span>
-                              </div>
+                              {client.email && (
+                                <div className="flex items-center gap-2 text-gray-600">
+                                  <Mail className="h-4 w-4" />
+                                  <span>{client.email}</span>
+                                </div>
+                              )}
 
                               {client.nif && (
                                 <div className="flex items-center gap-2 text-gray-600">
@@ -503,7 +502,7 @@ export default function ClientsPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="clientEmail" className="text-sm font-medium">
-                Email *
+                Email (opcional)
               </Label>
               <Input
                 id="clientEmail"

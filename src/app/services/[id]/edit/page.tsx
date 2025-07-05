@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Save, X, Upload, File } from 'lucide-react'
+import { ArrowLeft, Save, X, Upload, File, Wrench } from 'lucide-react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -49,6 +49,8 @@ export default function EditServicePage() {
   const [documentoCompraFile, setDocumentoCompraFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [showCustomBrand, setShowCustomBrand] = useState(false)
+  const [customBrand, setCustomBrand] = useState("")
   const [formData, setFormData] = useState({
     tipo: '',
     descricaoProblema: '',
@@ -88,6 +90,7 @@ export default function EditServicePage() {
     "Hotpoint",
     "Candy",
     "Beko",
+    "Outro (especificar)"
   ]
   
   const technicians = [
@@ -108,6 +111,13 @@ export default function EditServicePage() {
         // Verificar se já existe documento de compra nas fotos
         const documentoCompraFoto = serviceData.fotos?.find((foto: any) => foto.descricao === 'Documento de Compra')
         
+        // Verificar se a marca é personalizada (não está na lista)
+        const isCustomBrand = !equipmentBrands.slice(0, -1).includes(serviceData.equipamento.marca)
+        if (isCustomBrand && serviceData.equipamento.marca) {
+          setShowCustomBrand(true)
+          setCustomBrand(serviceData.equipamento.marca)
+        }
+        
         setFormData({
           tipo: serviceData.tipo || '',
           descricaoProblema: serviceData.descricaoProblema || '',
@@ -117,7 +127,7 @@ export default function EditServicePage() {
           dataCompra: serviceData.equipamento.dataCompra ? serviceData.equipamento.dataCompra.split('T')[0] : '',
           documentoCompra: documentoCompraFoto ? 'Documento já anexado (ver aba Fotos)' : '',
           equipamentoTipo: serviceData.equipamento.tipo || '',
-          equipamentoMarca: serviceData.equipamento.marca || '',
+          equipamentoMarca: isCustomBrand ? '' : (serviceData.equipamento.marca || ''),
           equipamentoModelo: serviceData.equipamento.modelo || '',
           equipamentoNumeroSerie: serviceData.equipamento.numeroSerie || ''
         })
@@ -134,6 +144,20 @@ export default function EditServicePage() {
       ...prev,
       [field]: value
     }))
+    
+    // Se selecionou "Outro (especificar)" para marca, mostrar campo personalizado
+    if (field === "equipamentoMarca") {
+      if (value === "Outro (especificar)") {
+        setShowCustomBrand(true)
+        setFormData((prev) => ({
+          ...prev,
+          equipamentoMarca: "",
+        }))
+      } else if (!showCustomBrand) {
+        // Só limpar se não estivermos no modo personalizado
+        setCustomBrand("")
+      }
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -319,18 +343,57 @@ export default function EditServicePage() {
                   </div>
                   <div>
                     <Label htmlFor="equipamentoMarca">Marca</Label>
-                    <Select onValueChange={(value) => handleInputChange("equipamentoMarca", value)} value={formData.equipamentoMarca}>
-                      <SelectTrigger className="bg-white">
-                        <SelectValue placeholder="Selecione a marca" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border shadow-lg">
-                        {equipmentBrands.map((brand) => (
-                          <SelectItem key={brand} value={brand}>
-                            {brand}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {!showCustomBrand ? (
+                      <Select onValueChange={(value) => handleInputChange("equipamentoMarca", value)} value={formData.equipamentoMarca}>
+                        <SelectTrigger className="bg-white">
+                          <SelectValue placeholder="Selecione a marca" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border shadow-lg">
+                          {equipmentBrands.map((brand) => (
+                            <SelectItem key={brand} value={brand}>
+                              {brand}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div className="flex items-center gap-2 flex-1">
+                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                              <Wrench className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-blue-900">Marca Personalizada</p>
+                              <p className="text-xs text-blue-600">Digite o nome da marca</p>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setShowCustomBrand(false)
+                              setCustomBrand("")
+                              setFormData(prev => ({ ...prev, equipamentoMarca: "" }))
+                            }}
+                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-100"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <Input
+                          placeholder="Digite o nome da marca..."
+                          value={customBrand}
+                          onChange={(e) => {
+                            setCustomBrand(e.target.value)
+                            handleInputChange("equipamentoMarca", e.target.value)
+                          }}
+                          className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+                          required
+                        />
+                      </div>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="equipamentoModelo">Modelo</Label>

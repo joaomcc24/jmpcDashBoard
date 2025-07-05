@@ -64,10 +64,13 @@ export default function NewServicePage() {
     "Hotpoint",
     "Candy",
     "Beko",
+    "Outro (especificar)"
   ]
   // Estados para seleções
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
   const [documentoCompraFile, setDocumentoCompraFile] = useState<File | null>(null)
+  const [showCustomBrand, setShowCustomBrand] = useState(false)
+  const [customBrand, setCustomBrand] = useState("")
 
   // Estados para criar novo cliente
   const [showNewClientDialog, setShowNewClientDialog] = useState(false)
@@ -266,6 +269,20 @@ export default function NewServicePage() {
       ...prev,
       [field]: value,
     }))
+    
+    // Se selecionou "Outro (especificar)" para marca, mostrar campo personalizado
+    if (field === "equipamentoMarca") {
+      if (value === "Outro (especificar)") {
+        setShowCustomBrand(true)
+        setFormData((prev) => ({
+          ...prev,
+          equipamentoMarca: "",
+        }))
+      } else if (!showCustomBrand) {
+        // Só limpar se não estivermos no modo personalizado
+        setCustomBrand("")
+      }
+    }
   }
 
   const handleSelectClient = (client: Client) => {
@@ -293,8 +310,8 @@ export default function NewServicePage() {
     console.log("=== INÍCIO CRIAÇÃO CLIENTE FRONTEND ===")
     console.log("Dados do cliente:", newClientData)
 
-    if (!newClientData.nome || !newClientData.telefone || !newClientData.email) {
-      alert("Nome, telefone e email são obrigatórios")
+    if (!newClientData.nome || !newClientData.telefone) {
+      alert("Nome e telefone são obrigatórios")
       return
     }
 
@@ -425,12 +442,14 @@ export default function NewServicePage() {
                                       </div>
                                       <div className="text-sm text-gray-600 mt-1 space-y-1">
                                         <div className="flex items-center gap-4">
-                                          <span className="flex items-center gap-1">
-                                            <svg className="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                            </svg>
-                                            {client.email}
-                                          </span>
+                                          {client.email && (
+                                            <span className="flex items-center gap-1">
+                                              <svg className="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                              </svg>
+                                              {client.email}
+                                            </span>
+                                          )}
                                           <span className="flex items-center gap-1">
                                             <svg className="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -492,12 +511,14 @@ export default function NewServicePage() {
                                 <div className="font-semibold text-blue-900 text-lg">{selectedClient.nome}</div>
                                 <div className="text-sm text-blue-700 mt-1 space-y-1">
                                   <div className="flex items-center gap-3">
-                                    <span className="flex items-center gap-1">
-                                      <svg className="h-3 w-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                      </svg>
-                                      {selectedClient.email}
-                                    </span>
+                                    {selectedClient.email && (
+                                      <span className="flex items-center gap-1">
+                                        <svg className="h-3 w-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                        {selectedClient.email}
+                                      </span>
+                                    )}
                                     <span className="flex items-center gap-1">
                                       <svg className="h-3 w-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -563,7 +584,7 @@ export default function NewServicePage() {
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label htmlFor="newClientEmail">Email *</Label>
+                                <Label htmlFor="newClientEmail">Email (opcional)</Label>
                                 <Input
                                   id="newClientEmail"
                                   type="email"
@@ -617,47 +638,7 @@ export default function NewServicePage() {
                           </DialogContent>
                         </Dialog>
                       </div>
-                    </div>                    {selectedClient && (
-                      <div className="mt-4 p-4 bg-gradient-to-r from-gray-50 to-slate-50 rounded-lg border border-gray-200 shadow-sm">
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                              <div className="p-1.5 bg-gray-100 rounded-full">
-                                <User className="h-4 w-4 text-gray-600" />
-                              </div>
-                              <p className="font-semibold text-gray-900">{selectedClient.nome}</p>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-600 ml-8">
-                              <div className="flex items-center gap-2">
-                                <Phone className="h-3.5 w-3.5 text-gray-500" />
-                                <span>{selectedClient.telefone}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Mail className="h-3.5 w-3.5 text-gray-500" />
-                                <span>{selectedClient.email}</span>
-                              </div>
-                              {selectedClient.nif && (
-                                <div className="flex items-center gap-2">
-                                  <CreditCard className="h-3.5 w-3.5 text-gray-500" />
-                                  <span>NIF: {selectedClient.nif}</span>
-                                </div>
-                              )}
-                              {selectedClient.morada && (
-                                <div className="flex items-center gap-2">
-                                  <MapPin className="h-3.5 w-3.5 text-gray-500" />
-                                  <span>{selectedClient.morada}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center px-3 py-1 bg-gray-100 rounded-full border">
-                            <span className="text-xs font-medium text-gray-700 capitalize">
-                              {selectedClient.tipo}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -689,18 +670,57 @@ export default function NewServicePage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="equipamentoMarca">Marca</Label>
-                      <Select onValueChange={(value) => handleInputChange("equipamentoMarca", value)} required>
-                        <SelectTrigger className="bg-white">
-                          <SelectValue placeholder="Selecione a marca" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white border shadow-lg">
-                          {equipmentBrands.map((brand) => (
-                            <SelectItem key={brand} value={brand}>
-                              {brand}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {!showCustomBrand ? (
+                        <Select onValueChange={(value) => handleInputChange("equipamentoMarca", value)} required>
+                          <SelectTrigger className="bg-white">
+                            <SelectValue placeholder="Selecione a marca" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white border shadow-lg">
+                            {equipmentBrands.map((brand) => (
+                              <SelectItem key={brand} value={brand}>
+                                {brand}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div className="flex items-center gap-2 flex-1">
+                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                <Wrench className="h-4 w-4 text-blue-600" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-blue-900">Marca Personalizada</p>
+                                <p className="text-xs text-blue-600">Digite o nome da marca</p>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setShowCustomBrand(false)
+                                setCustomBrand("")
+                                setFormData(prev => ({ ...prev, equipamentoMarca: "" }))
+                              }}
+                              className="text-blue-600 hover:text-blue-800 hover:bg-blue-100"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <Input
+                            placeholder="Digite o nome da marca..."
+                            value={customBrand}
+                            onChange={(e) => {
+                              setCustomBrand(e.target.value)
+                              handleInputChange("equipamentoMarca", e.target.value)
+                            }}
+                            className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+                            required
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">

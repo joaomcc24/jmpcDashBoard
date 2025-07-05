@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     // Validação e limpeza dos dados
     const nome = body.nome?.toString().trim()
     const telefone = body.telefone?.toString().trim()
-    const email = body.email?.toString().trim().toLowerCase()
+    const email = body.email?.toString().trim().toLowerCase() || ""
     const nif = body.nif?.toString().trim() || null
     const morada = body.morada?.toString().trim() || ""
     const tipo = body.tipo?.toString().trim() || "particular"
@@ -65,19 +65,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Telefone é obrigatório" }, { status: 400 })
     }
 
-    if (!email) {
-      console.log("Erro: Email é obrigatório")
-      return NextResponse.json({ error: "Email é obrigatório" }, { status: 400 })
-    }
+    // Email agora é opcional - remover validação obrigatória
 
     console.log("A verificar se existem duplicados...")
 
-    // Verificar email
-    const existingEmail = await prisma.cliente.findFirst({
-      where: { email: email },
-    })
-    if (existingEmail) {
-      return NextResponse.json({ error: "Já existe um cliente com este email" }, { status: 400 })
+    // Verificar email duplicado (só se email foi fornecido)
+    if (email) {
+      const existingEmail = await prisma.cliente.findFirst({
+        where: { email: email },
+      })
+      if (existingEmail) {
+        return NextResponse.json({ error: "Já existe um cliente com este email" }, { status: 400 })
+      }
     }
 
     // Verificar telefone
