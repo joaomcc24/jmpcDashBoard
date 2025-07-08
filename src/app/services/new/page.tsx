@@ -584,7 +584,7 @@ export default function NewServicePage() {
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label htmlFor="newClientEmail">Email (opcional)</Label>
+                                <Label htmlFor="newClientEmail">Email</Label>
                                 <Input
                                   id="newClientEmail"
                                   type="email"

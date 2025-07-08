@@ -12,7 +12,7 @@ model Cliente {
   clienteId String    @unique @default("")
   nome      String
   telefone  String    @unique
-  email     String    @unique
+  email     String?   @unique
   nif       String?   @unique
   morada    String
   tipo      String

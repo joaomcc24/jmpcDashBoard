@@ -138,7 +138,7 @@ export default function ServicesPage() {
         <div className="flex-1 flex flex-col">
           {/* Header */}
           <header 
-            className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-6 shadow-sm"
+            className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-6 shadow-sm opacity-95 backdrop-blur transition-all"
             style={{ minHeight: "64px", maxHeight: "64px" }}
           >
             <div className="flex flex-1 items-center gap-2">

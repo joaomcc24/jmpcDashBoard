@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  webpack: (config, { isServer }) => {
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
+  webpack: (config, { isServer, dev }) => {
     if (!isServer) {
       // Configurar alias para PDF.js worker
       config.resolve.alias = {
@@ -9,6 +12,15 @@ const nextConfig: NextConfig = {
         'pdfjs-dist/build/pdf.worker.entry': 'pdfjs-dist/build/pdf.worker.min.js',
       }
     }
+    
+    // Otimizações para CSS em desenvolvimento
+    if (dev) {
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+      }
+    }
+    
     return config
   },
   async headers() {

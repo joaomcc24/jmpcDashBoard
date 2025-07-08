@@ -65,11 +65,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Telefone é obrigatório" }, { status: 400 })
     }
 
-    // Email agora é opcional - remover validação obrigatória
-
     console.log("A verificar se existem duplicados...")
 
-    // Verificar email duplicado (só se email foi fornecido)
     if (email) {
       const existingEmail = await prisma.cliente.findFirst({
         where: { email: email },
@@ -121,8 +118,8 @@ export async function POST(request: Request) {
           clienteId,
           nome,
           telefone,
-          email,
-          nif: nif || null,
+          email: email && email.trim() !== "" ? email : null,
+          nif: nif && nif.trim() !== "" ? nif : null,
           morada,
           tipo,
         },

@@ -135,31 +135,11 @@ export default function DashboardPage() {
         <Sidebar />
 
         <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <header 
-            className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-white px-6 shadow-sm"
-            style={{ minHeight: "64px", maxHeight: "64px" }}
-          >
-            <div className="flex flex-1 items-center gap-2">
-              <TrendingUp className="h-6 w-6 text-blue-600" />
-              <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Calendar className="h-4 w-4" />
-              {new Date().toLocaleDateString("pt-PT", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </div>
-          </header>
-
           <main className="flex-1 overflow-auto p-6">
           <div className="max-w-7xl mx-auto space-y-6">
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
               <h2 className="text-xl font-bold mb-2">Bem-vindo à JMPC</h2>
-              <p className="text-blue-100">Sistema de Gestão de Serviços Técnicos</p>
+              <p className="text-blue-100">Sistema de Gestão de Serviços Técnicos</p>              
             </div>            {/* Estatísticas principais */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><Card className="border-0 shadow-sm">
                 <CardContent className="p-6">
@@ -318,7 +298,9 @@ export default function DashboardPage() {
                   )}
                 </CardContent>
               </Card>
-            </div>            {/* Estados dos serviços */}
+            </div>
+
+            {/* Estados dos serviços */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-4">

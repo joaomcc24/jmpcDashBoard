@@ -253,9 +253,8 @@ export default function ClientsPage() {
       <Sidebar />
 
       <div className="flex-1 flex flex-col">
-        {/* Header - ALTURA EXATA ALINHADA */}
         <header
-          className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-gray px-6 shadow-sm"
+          className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-gray px-6 shadow-sm opacity-95 backdrop-blur transition-all"
           style={{ minHeight: "64px", maxHeight: "64px" }}
         >
           <div className="flex flex-1 items-center gap-2">
@@ -502,7 +501,7 @@ export default function ClientsPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="clientEmail" className="text-sm font-medium">
-                Email (opcional)
+                Email
               </Label>
               <Input
                 id="clientEmail"
