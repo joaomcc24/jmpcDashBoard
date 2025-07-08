@@ -115,180 +115,144 @@ model Deslocacao {
   servico   Servico  @relation(fields: [servicoId], references: [id])
 }
 
-// Modelo para autenticação
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String   // Hash da password com bcrypt
-  name      String
-  role      String   @default("admin") // Para futuras expansões
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Relações para configurações
-  userSettings  UserSettings?
+  id            String         @id @default(cuid())
+  email         String         @unique
+  password      String
+  name          String
+  role          String         @default("admin")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  backups       Backup[]
   notifications Notification[]
   sessions      UserSession[]
-  backups       Backup[]
+  userSettings  UserSettings?
 }
 
-// Configurações do utilizador
 model UserSettings {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Aparência
-  theme        String   @default("system") // "light", "dark", "system"
-  colorScheme  String   @default("blue")
-  fontSize     String   @default("medium")
-  compactMode  Boolean  @default(false)
-  
-  // Perfil
-  phone        String?
-  position     String?
-  department   String?
-  address      String?
-  city         String?
-  postalCode   String?
-  bio          String?
-  avatarUrl    String?
-  
-  // Notificações
-  emailNotifications    Boolean @default(true)
-  pushNotifications     Boolean @default(true)
-  emailFrequency        String  @default("immediate") // "immediate", "hourly", "daily"
-  quietHours           Boolean @default(false)
-  quietStart           String  @default("22:00")
-  quietEnd             String  @default("08:00")
-  weekendNotifications Boolean @default(true)
-  
-  // Email settings específicas
-  emailNewService      Boolean @default(true)
-  emailServiceUpdates  Boolean @default(true)
-  emailClientMessages  Boolean @default(false)
-  emailSystemAlerts    Boolean @default(true)
-  emailDailyReport     Boolean @default(false)
-  emailWeeklyReport    Boolean @default(true)
-  
-  // Push settings específicas
-  pushUrgentServices   Boolean @default(true)
-  pushServiceCompleted Boolean @default(false)
-  pushClientNotifications Boolean @default(true)
-  pushSystemAlerts     Boolean @default(true)
-  pushReminders        Boolean @default(true)
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+  theme                   String   @default("system")
+  colorScheme             String   @default("blue")
+  fontSize                String   @default("medium")
+  compactMode             Boolean  @default(false)
+  phone                   String?
+  position                String?
+  department              String?
+  address                 String?
+  city                    String?
+  postalCode              String?
+  bio                     String?
+  avatarUrl               String?
+  emailNotifications      Boolean  @default(true)
+  pushNotifications       Boolean  @default(true)
+  emailFrequency          String   @default("immediate")
+  quietHours              Boolean  @default(false)
+  quietStart              String   @default("22:00")
+  quietEnd                String   @default("08:00")
+  weekendNotifications    Boolean  @default(true)
+  emailNewService         Boolean  @default(true)
+  emailServiceUpdates     Boolean  @default(true)
+  emailClientMessages     Boolean  @default(false)
+  emailSystemAlerts       Boolean  @default(true)
+  emailDailyReport        Boolean  @default(false)
+  emailWeeklyReport       Boolean  @default(true)
+  pushUrgentServices      Boolean  @default(true)
+  pushServiceCompleted    Boolean  @default(false)
+  pushClientNotifications Boolean  @default(true)
+  pushSystemAlerts        Boolean  @default(true)
+  pushReminders           Boolean  @default(true)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// Notificações do sistema
 model Notification {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  type      String   // "service", "system", "client", "alert"
+  type      String
   title     String
   message   String
-  data      Json?    // Dados adicionais como IDs de serviços, etc.
-  
-  read      Boolean  @default(false)
+  data      Json?
+  read      Boolean   @default(false)
   readAt    DateTime?
-  
-  createdAt DateTime @default(now())
-  
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, createdAt])
 }
 
-// Sessões de utilizador para segurança
 model UserSession {
-  id         String    @id @default(cuid())
+  id         String   @id @default(cuid())
   userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  device     String?   // "Windows PC - Chrome"
+  device     String?
   ipAddress  String
-  location   String?   // "Lisboa, Portugal"
+  location   String?
   userAgent  String?
-  
-  isActive   Boolean   @default(true)
-  lastActive DateTime  @default(now())
+  isActive   Boolean  @default(true)
+  lastActive DateTime @default(now())
   expiresAt  DateTime
-  
-  createdAt  DateTime  @default(now())
-  
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, isActive])
 }
 
-// Logs de acesso e segurança
 model AccessLog {
   id        String   @id @default(cuid())
-  userId    String?  // Pode ser null para tentativas falhadas
-  
-  action    String   // "login", "logout", "failed_login", etc.
+  userId    String?
+  action    String
   ipAddress String
   location  String?
   device    String?
   userAgent String?
-  
   success   Boolean
-  details   Json?    // Detalhes adicionais
-  
+  details   Json?
   createdAt DateTime @default(now())
-  
+
   @@index([userId, createdAt])
   @@index([action, createdAt])
 }
 
-// Backups da base de dados
 model Backup {
-  id          String   @id @default(cuid())
-  userId      String?  // Quem iniciou (null para automático)
-  user        User?    @relation(fields: [userId], references: [id])
-  
-  filename    String
-  size        BigInt   // Tamanho em bytes
-  type        String   // "automatic", "manual"
-  status      String   // "pending", "completed", "failed"
-  
-  startedAt   DateTime @default(now())
-  completedAt DateTime?
+  id           String    @id @default(cuid())
+  userId       String?
+  filename     String
+  size         BigInt
+  type         String
+  status       String
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
   errorMessage String?
-  
+  user         User?     @relation(fields: [userId], references: [id])
+
   @@index([status, startedAt])
 }
 
-// Configurações do sistema
 model SystemConfig {
   id          String   @id @default(cuid())
   key         String   @unique
   value       String
   description String?
-  category    String   // "database", "email", "security", etc.
-  
+  category    String
   updatedAt   DateTime @updatedAt
-  updatedBy   String?  // ID do utilizador que alterou
-  
+  updatedBy   String?
+
   @@index([category])
 }
 
-// Tarefas de manutenção
 model MaintenanceTask {
   id          String    @id @default(cuid())
   name        String
   description String
-  category    String    // "optimization", "cleanup", "backup"
-  frequency   String    // "daily", "weekly", "monthly"
-  
+  category    String
+  frequency   String
   lastRun     DateTime?
   nextRun     DateTime?
-  status      String    @default("pending") // "pending", "running", "completed", "failed"
-  
+  status      String    @default("pending")
   enabled     Boolean   @default(true)
-  
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
+
   @@index([status, nextRun])
 }
