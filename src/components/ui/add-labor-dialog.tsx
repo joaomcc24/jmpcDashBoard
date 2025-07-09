@@ -47,7 +47,6 @@ export function AddLaborDialog({ serviceId, existingLabor, onLaborAdded }: AddLa
         throw new Error("Erro ao adicionar mão de obra")
       }
 
-      // Reset form and close dialog
       setFormData({ total: "" })
       setIsOpen(false)
       onLaborAdded()
