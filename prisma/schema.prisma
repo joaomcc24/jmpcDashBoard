@@ -9,7 +9,7 @@ datasource db {
 
 model Cliente {
   id        Int       @id @default(autoincrement())
-  clienteId String    @unique @default("")
+  clienteId String    @unique @default(cuid())
   nome      String
   telefone  String    @unique
   email     String?   @unique
@@ -34,8 +34,8 @@ model Equipamento {
 }
 
 model Servico {
-  id                String      @id @default("")
-  servicoId         String      @unique @default("")
+  id                String      @id @default(cuid())
+  servicoId         String      @unique @default(cuid())
   clienteId         Int
   equipamentoId     Int
   tipo              String

@@ -9,9 +9,15 @@ export async function GET(
   const { id } = await params
 
   try {
-    const service = await prisma.servico.findUnique({
+    console.log(`🔍 Procurando serviço: ${id}`)
+    
+    // Procurar por id ou servicoId para maior compatibilidade
+    const service = await prisma.servico.findFirst({
       where: {
-        id: id,
+        OR: [
+          { id: id },
+          { servicoId: id }
+        ]
       },
       include: {
         cliente: true,
@@ -25,17 +31,26 @@ export async function GET(
     })
     
     if (!service) {
+      console.error(`❌ Serviço não encontrado: ${id}`)
+      
+      // Verificar que serviços existem
+      const allServices = await prisma.servico.findMany({
+        select: { id: true, servicoId: true }
+      })
+      console.log('📋 Serviços disponíveis:', allServices)
+      
       return NextResponse.json(
         { error: "Serviço não encontrado" },
         { status: 404 }
       )
     }
     
+    console.log(`✅ Serviço encontrado: ${service.id} (${service.servicoId})`)
     return NextResponse.json(service)
   } catch (error) {
-    console.error('Erro ao buscar serviço:', error)
+    console.error('❌ Erro ao buscar serviço:', error)
     return NextResponse.json(
-      { error: "Erro ao buscar serviço" },
+      { error: "Erro ao buscar dados do serviço" },
       { status: 500 }
     )
   }
