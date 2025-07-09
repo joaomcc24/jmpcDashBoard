@@ -7,7 +7,6 @@ async function main() {
   console.log('🌱 Configurando utilizador administrador...')
 
   try {
-    // Obter credenciais das variáveis de ambiente
     const adminEmail = process.env.ADMIN_EMAIL
     const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH
     
