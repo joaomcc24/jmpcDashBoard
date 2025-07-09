@@ -18,8 +18,6 @@ import { Clock, Edit } from "lucide-react"
 interface AddLaborDialogProps {
   serviceId: string
   existingLabor?: {
-    horas: string
-    valorHora: string
     total: string
   } | null
   onLaborAdded: () => void
@@ -29,8 +27,7 @@ export function AddLaborDialog({ serviceId, existingLabor, onLaborAdded }: AddLa
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
-    horas: existingLabor?.horas || "",
-    valorHora: existingLabor?.valorHora || "",
+    total: existingLabor?.total || "",
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,18 +40,19 @@ export function AddLaborDialog({ serviceId, existingLabor, onLaborAdded }: AddLa
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ total: formData.total }),
       })
 
       if (!response.ok) {
         throw new Error("Erro ao adicionar mão de obra")
       }
 
+      // Reset form and close dialog
+      setFormData({ total: "" })
       setIsOpen(false)
       onLaborAdded()
     } catch (error) {
       console.error("Erro ao adicionar mão de obra:", error)
-      // TODO: Add toast notification
     } finally {
       setLoading(false)
     }
@@ -63,10 +61,6 @@ export function AddLaborDialog({ serviceId, existingLabor, onLaborAdded }: AddLa
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
-
-  const total = formData.horas && formData.valorHora 
-    ? (parseFloat(formData.horas) * parseFloat(formData.valorHora)).toFixed(2)
-    : "0.00"
 
   const isEditing = !!existingLabor
 
@@ -91,47 +85,25 @@ export function AddLaborDialog({ serviceId, existingLabor, onLaborAdded }: AddLa
           <DialogDescription>
             {isEditing 
               ? "Edite as informações da mão de obra para este serviço."
-              : "Adicione as horas de trabalho e valor por hora."
+              : "Adicione os detalhes da mão de obra para este serviço."
             }
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="horas">Horas de Trabalho</Label>
-              <Input
-                id="horas"
-                type="number"
-                min="0"
-                step="0.25"
-                placeholder="8.00"
-                value={formData.horas}
-                onChange={(e) => handleInputChange("horas", e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="valorHora">Valor por Hora (€)</Label>
-              <Input
-                id="valorHora"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="15.00"
-                value={formData.valorHora}
-                onChange={(e) => handleInputChange("valorHora", e.target.value)}
-                required
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="flex items-center gap-4">
+            <Label htmlFor="total" className="min-w-0 flex-shrink-0">Mão de obra</Label>
+            <Input
+              id="total"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="8.00"
+              value={formData.total}
+              onChange={(e) => handleInputChange("total", e.target.value)}
+              required
+              className="w-32"
+            />
           </div>
-          {(formData.horas && formData.valorHora) && (
-            <div className="p-3 bg-gray-50 rounded-md">
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-medium">Total da Mão de Obra:</span>
-                <span className="font-semibold">{total} €</span>
-              </div>
-            </div>
-          )}
           <DialogFooter>
             <Button 
               type="button" 

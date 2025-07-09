@@ -34,13 +34,9 @@ interface ServiceData {
     total: string
   }>
   maoDeObra: {
-    horas: string
-    valorHora: string
     total: string
   } | null
   deslocacao: {
-    km: string
-    valorKm: string
     total: string
   } | null
   valorTotal: string | null
@@ -162,7 +158,7 @@ function generateReportContent(
             </div>
         </div>
 
-        <!-- Peças Utilizadas - Altura dinâmica baseada no número de peças -->
+        <!-- Peças Utilizadas -->
         <div class="section">
             <div class="section-title">Peças Utilizadas</div>
             <div class="section-content">
@@ -176,7 +172,7 @@ function generateReportContent(
                         </tr>
                     </thead>
                     <tbody>
-                        ${Array.from({length: Math.max(4, serviceData.pecas.length + 2)}, (_, index) => {
+                        ${Array.from({length: Math.max(4, serviceData.pecas.length + 1)}, (_, index) => {
                             const part = serviceData.pecas[index];
                             return `
                             <tr>
@@ -196,33 +192,15 @@ function generateReportContent(
             <div class="section-title">Descrição da Reparação</div>
             <div class="section-content">
                 <div class="repair-description">
-                    <div style="background: white; min-height: 70px; padding: 8px; border: none;"></div>
+                    <div style="background: white; min-height: 100px; padding: 8px; border: none;"></div>
                 </div>
             </div>
         </div>
 
-        <div class="totals-section">
-            <div class="total-line">
-                <span>Subtotal Peças:</span>
-                <span>${partsTotal.toFixed(2)} €</span>
-            </div>
-            ${serviceData.maoDeObra ? `
-            <div class="total-line">
-                <span>Mão de Obra (${serviceData.maoDeObra.horas}h × ${parseFloat(serviceData.maoDeObra.valorHora).toFixed(2)} €):</span>
-                <span>${parseFloat(serviceData.maoDeObra.total).toFixed(2)} €</span>
-            </div>
-            ` : ''}
-            ${serviceData.deslocacao ? `
-            <div class="total-line">
-                <span>Deslocação (${serviceData.deslocacao.km} km × ${parseFloat(serviceData.deslocacao.valorKm).toFixed(2)} €):</span>
-                <span>${parseFloat(serviceData.deslocacao.total).toFixed(2)} €</span>
-            </div>
-            ` : ''}
-            <div class="total-line">
-                <span>TOTAL GERAL:</span>
+            <div class="totals-section">
+                <span>Total do serviço:</span>
                 <span>${grandTotal.toFixed(2)} €</span>
             </div>
-        </div>
 
         <div class="signatures-section">
             <div class="section-title">Assinaturas</div>
@@ -520,23 +498,13 @@ export function PrintReport({ serviceData }: PrintReportProps) {
             margin-top: 6px;
             page-break-inside: avoid;
             flex-shrink: 0;
-        }
-          
-        .total-line {
             display: flex;
             justify-content: space-between;
-            padding: 3px 0;
-            border-bottom: 1px solid #e5e7eb;
-            font-size: 11px;
-        }
-        
-        .total-line:last-child {
-            border-bottom: none;
+            border-top: 2px solid #2563eb;
             font-weight: bold;
             font-size: 12px;
             color: #1f2937;
-            padding-top: 5px;
-            border-top: 2px solid #2563eb;
+            border-bottom: none;
         }
 
         .footer {

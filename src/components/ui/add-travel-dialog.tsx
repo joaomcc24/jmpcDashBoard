@@ -18,8 +18,6 @@ import { Car, Edit } from "lucide-react"
 interface AddTravelDialogProps {
   serviceId: string
   existingTravel?: {
-    km: string
-    valorKm: string
     total: string
   } | null
   onTravelAdded: () => void
@@ -29,8 +27,7 @@ export function AddTravelDialog({ serviceId, existingTravel, onTravelAdded }: Ad
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
-    km: existingTravel?.km || "",
-    valorKm: existingTravel?.valorKm || "",
+    total: existingTravel?.total || "",
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,18 +40,19 @@ export function AddTravelDialog({ serviceId, existingTravel, onTravelAdded }: Ad
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ total: formData.total }),
       })
 
       if (!response.ok) {
         throw new Error("Erro ao adicionar deslocação")
       }
 
+      // Reset form and close dialog
+      setFormData({ total: "" })
       setIsOpen(false)
       onTravelAdded()
     } catch (error) {
       console.error("Erro ao adicionar deslocação:", error)
-      // TODO: Add toast notification
     } finally {
       setLoading(false)
     }
@@ -63,10 +61,6 @@ export function AddTravelDialog({ serviceId, existingTravel, onTravelAdded }: Ad
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
-
-  const total = formData.km && formData.valorKm 
-    ? (parseFloat(formData.km) * parseFloat(formData.valorKm)).toFixed(2)
-    : "0.00"
 
   const isEditing = !!existingTravel
 
@@ -95,43 +89,21 @@ export function AddTravelDialog({ serviceId, existingTravel, onTravelAdded }: Ad
             }
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="km">Quilómetros</Label>
-              <Input
-                id="km"
-                type="number"
-                min="0"
-                step="0.1"
-                placeholder="50.0"
-                value={formData.km}
-                onChange={(e) => handleInputChange("km", e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="valorKm">Valor por Km (€)</Label>
-              <Input
-                id="valorKm"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="0.50"
-                value={formData.valorKm}
-                onChange={(e) => handleInputChange("valorKm", e.target.value)}
-                required
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="flex items-center gap-4">
+            <Label htmlFor="total" className="min-w-0 flex-shrink-0">Deslocação</Label>
+            <Input
+              id="total"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="60"
+              value={formData.total}
+              onChange={(e) => handleInputChange("total", e.target.value)}
+              required
+              className="w-32"
+            />
           </div>
-          {(formData.km && formData.valorKm) && (
-            <div className="p-3 bg-gray-50 rounded-md">
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-medium">Total da Deslocação:</span>
-                <span className="font-semibold">{total} €</span>
-              </div>
-            </div>
-          )}
           <DialogFooter>
             <Button 
               type="button" 

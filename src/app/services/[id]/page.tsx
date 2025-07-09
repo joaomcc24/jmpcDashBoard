@@ -19,7 +19,8 @@ import {
   MoreVertical,
   PlusCircle,
   Trash2,
-  ChevronDown
+  ChevronDown,
+  Car
 } from "lucide-react"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { Button } from "@/components/ui/button"
@@ -95,29 +96,25 @@ interface ServiceData {
     codigo: string;
     nome: string;
     quantidade: number;
-    precoUnitario: string; // Decimal vem como string
-    total: string; // Decimal vem como string
+    precoUnitario: string; 
+    total: string; 
     createdAt: string;
   }>;
   maoDeObra: {
     id: number;
     servicoId: string;
-    horas: string; // Decimal vem como string
-    valorHora: string; // Decimal vem como string
-    total: string; // Decimal vem como string
+    total: string; 
     createdAt: string;
     updatedAt: string;
   } | null;
   deslocacao: {
     id: number;
     servicoId: string;
-    km: string; // Decimal vem como string
-    valorKm: string; // Decimal vem como string
-    total: string; // Decimal vem como string
+    total: string; 
     createdAt: string;
     updatedAt: string;
   } | null;
-  valorTotal: string | null; // Decimal vem como string
+  valorTotal: string | null; 
   createdAt: string;
   updatedAt: string;
 }
@@ -1007,7 +1004,6 @@ const fetchServiceData = async () => {
                     </div>
                   </div>
 
-                  {/* Mão de obra e Deslocação lado a lado */}
                   <div className="grid md:grid-cols-2 gap-6">
                     {/* Mão de obra */}
                     <div>                      <div className="flex justify-between items-center mb-3">
@@ -1028,20 +1024,13 @@ const fetchServiceData = async () => {
                           </Button>
                         )}
                       </div>
-                      <div className="border rounded-md p-4 bg-muted/50">
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Horas de trabalho:</span>
-                            <span className="font-medium">{serviceData.maoDeObra?.horas || "0"}h</span>
+                      <div className="border rounded-lg p-4 bg-white hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-gray-500" />
+                            <span className="font-medium text-gray-700">Mão de Obra</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Valor por hora:</span>
-                            <span className="font-medium">{serviceData.maoDeObra ? parseFloat(serviceData.maoDeObra.valorHora).toFixed(2) : "0.00"} €</span>
-                          </div>
-                          <div className="flex justify-between border-t pt-2">
-                            <span className="font-medium">Total Mão de Obra:</span>
-                            <span className="font-bold text-lg">{serviceData.maoDeObra ? parseFloat(serviceData.maoDeObra.total).toFixed(2) : "0.00"} €</span>
-                          </div>
+                          <span className="text-lg font-semibold text-gray-900">{serviceData.maoDeObra ? parseFloat(serviceData.maoDeObra.total).toFixed(2) : "0.00"} €</span>
                         </div>
                       </div>
                     </div>
@@ -1065,30 +1054,25 @@ const fetchServiceData = async () => {
                           </Button>
                         )}
                       </div>
-                      <div className="border rounded-md p-4 bg-muted/50">
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Quilómetros:</span>
-                            <span className="font-medium">{serviceData.deslocacao?.km || "0"} km</span>
+                      <div className="border rounded-lg p-4 bg-white hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Car className="h-4 w-4 text-gray-500" />
+                            <span className="font-medium text-gray-700">Deslocação</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Valor por km:</span>
-                            <span className="font-medium">{serviceData.deslocacao ? parseFloat(serviceData.deslocacao.valorKm).toFixed(2) : "0.00"} €</span>
-                          </div>
-                          <div className="flex justify-between border-t pt-2">
-                            <span className="font-medium">Total Deslocação:</span>
-                            <span className="font-bold text-lg">{serviceData.deslocacao ? parseFloat(serviceData.deslocacao.total).toFixed(2) : "0.00"} €</span>
-                          </div>
+                          <span className="text-lg font-semibold text-gray-900">{serviceData.deslocacao ? parseFloat(serviceData.deslocacao.total).toFixed(2) : "0.00"} €</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Total geral */}
-                  <div className="border-1 rounded-lg bg-blue-50 p-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold text-blue-800">Total do serviço:</span>
-                      <span className="text-2xl font-bold text-gray-900">
+                  <div className="border rounded-lg p-4 bg-gray-900">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-white" />
+                        <span className="text-lg font-semibold text-white">Total do Serviço</span>
+                      </div>
+                      <span className="text-2xl font-bold text-white">
                         {(
                           (serviceData.pecas?.reduce((sum, peca) => sum + parseFloat(peca.total), 0) || 0) +
                           (serviceData.maoDeObra ? parseFloat(serviceData.maoDeObra.total) : 0) +
