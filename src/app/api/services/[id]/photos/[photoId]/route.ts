@@ -10,10 +10,9 @@ export async function DELETE(
   const { photoId } = await params
   
   try {
-    // Buscar a foto no banco para obter o caminho do arquivo
     const photo = await prisma.foto.findUnique({
       where: {
-        id: parseInt(photoId)
+        id: photoId
       }
     })
     
@@ -24,21 +23,18 @@ export async function DELETE(
       )
     }
     
-    // Remover arquivo do sistema de arquivos
     if (photo.url) {
       const filePath = join(process.cwd(), 'public', photo.url)
       try {
         await unlink(filePath)
       } catch (fileError) {
         console.error('Erro ao remover arquivo:', fileError)
-        // Continuar mesmo se não conseguir remover o arquivo
       }
     }
     
-    // Remover registro do banco de dados
     await prisma.foto.delete({
       where: {
-        id: parseInt(photoId)
+        id: photoId
       }
     })
     

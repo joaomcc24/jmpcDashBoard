@@ -22,7 +22,6 @@ export async function POST(
       )
     }
     
-    // Verificar se é um arquivo válido
     if (!photo.type.startsWith('image/') && photo.type !== 'application/pdf') {
       return NextResponse.json(
         { error: "Formato de arquivo não suportado. Use apenas imagens ou PDF." },
@@ -30,7 +29,6 @@ export async function POST(
       )
     }
     
-    // Criar nome único para o arquivo com extensão correta
     const bytes = await photo.arrayBuffer()
     const buffer = Buffer.from(bytes)
     const fileExt = photo.name.split('.').pop() || 'jpg'
@@ -44,11 +42,9 @@ export async function POST(
     
     const uploadPath = join(uploadDir, fileName)
     
-    // Salvar arquivo
     await writeFile(uploadPath, buffer)
     console.log(`Arquivo salvo em: ${uploadPath}`)
     
-    // Salvar informação no banco de dados
     const photoRecord = await prisma.foto.create({
       data: {
         servicoId: id,
