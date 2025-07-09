@@ -73,12 +73,14 @@ model Historico {
 }
 
 model Foto {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   servicoId String
-  descricao String
-  url       String?
+  url       String
+  publicId  String?
+  descricao String?
   createdAt DateTime @default(now())
-  servico   Servico  @relation(fields: [servicoId], references: [id])
+  updatedAt DateTime @default(now()) @updatedAt
+  servico   Servico  @relation(fields: [servicoId], references: [id], onDelete: Cascade)
 }
 
 model Peca {

@@ -1,4 +1,3 @@
-// src/app/api/services/[id]/labor/route.ts
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 
@@ -10,29 +9,29 @@ export async function POST(
 
   try {
     const body = await request.json()
-    const { horas, valorHora } = body
+    const { total } = body
 
-    if (!horas || !valorHora) {
+    if (!total) {
       return NextResponse.json(
-        { error: "Todos os campos são obrigatórios: horas, valorHora" },
+        { error: "Total é obrigatório" },
         { status: 400 }
       )
     }
 
-    const total = parseFloat(horas) * parseFloat(valorHora)
+    const totalValue = parseFloat(total)
 
     const newLabor = await prisma.maoDeObra.upsert({
       where: { servicoId: serviceId },
       update: {
-        horas: parseFloat(horas),
-        valorHora: parseFloat(valorHora),
-        total: total,
+        horas: 1, // Valor padrão
+        valorHora: totalValue, // O total vai para valorHora
+        total: totalValue,
       },
       create: {
         servicoId: serviceId,
-        horas: parseFloat(horas),
-        valorHora: parseFloat(valorHora),
-        total: total,
+        horas: 1, // Valor padrão
+        valorHora: totalValue, // O total vai para valorHora
+        total: totalValue,
       },
     })
 

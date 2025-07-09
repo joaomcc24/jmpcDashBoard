@@ -10,29 +10,29 @@ export async function POST(
 
   try {
     const body = await request.json()
-    const { km, valorKm } = body
+    const { total } = body
 
-    if (!km || !valorKm) {
+    if (!total) {
       return NextResponse.json(
-        { error: "Todos os campos são obrigatórios: km, valorKm" },
+        { error: "Total é obrigatório" },
         { status: 400 }
       )
     }
 
-    const total = parseFloat(km) * parseFloat(valorKm)
+    const totalValue = parseFloat(total)
 
     const newTravel = await prisma.deslocacao.upsert({
       where: { servicoId: serviceId },
       update: {
-        km: parseFloat(km),
-        valorKm: parseFloat(valorKm),
-        total: total,
+        km: 1, // Valor padrão
+        valorKm: totalValue, // O total vai para valorKm
+        total: totalValue,
       },
       create: {
         servicoId: serviceId,
-        km: parseFloat(km),
-        valorKm: parseFloat(valorKm),
-        total: total,
+        km: 1, // Valor padrão
+        valorKm: totalValue, // O total vai para valorKm
+        total: totalValue,
       },
     })
 
