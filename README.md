@@ -28,7 +28,7 @@ This dashboard is being built with modern web technologies to facilitate the man
 - Redux (planned)
 - Tailwind CSS
 
-## Getting Started
+<!--## Getting Started
 
 ### Prerequisites
 
@@ -64,7 +64,7 @@ This project is in active development. Future updates will include:
 - Inventory management
 - Invoicing capabilities
 - Analytics dashboard
-
+-->
 ## Learning Journey
 
 This project serves as both a practical business tool and a learning experience with React, TypeScript, and Redux.
