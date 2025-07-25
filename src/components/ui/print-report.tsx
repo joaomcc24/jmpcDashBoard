@@ -172,7 +172,7 @@ function generateReportContent(
                         </tr>
                     </thead>
                     <tbody>
-                        ${Array.from({length: Math.max(4, serviceData.pecas.length + 1)}, (_, index) => {
+                        ${Array.from({length: Math.max(3, serviceData.pecas.length + 1)}, (_, index) => {
                             const part = serviceData.pecas[index];
                             return `
                             <tr>
@@ -196,11 +196,6 @@ function generateReportContent(
                 </div>
             </div>
         </div>
-
-            <div class="totals-section">
-                <span>Total do serviço:</span>
-                <span>${grandTotal.toFixed(2)} €</span>
-            </div>
 
         <div class="signatures-section">
             <div class="section-title">Assinaturas</div>
