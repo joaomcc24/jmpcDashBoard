@@ -9,12 +9,15 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "mcp:build": "npx tsc src/mcp/diagnostic-assistant/server.ts --outDir dist/mcp --target es2020 --module commonjs --moduleResolution node --esModuleInterop true --allowSyntheticDefaultImports true",
+    "mcp:dev": "npm run mcp:build && node dist/mcp/src/mcp/diagnostic-assistant/server.js"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.15.1",
     "@prisma/client": "^6.9.0",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-checkbox": "^1.3.2",
@@ -27,6 +30,8 @@
     "@reduxjs/toolkit": "^2.7.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/next-auth": "^3.13.0",
+    "@vercel/analytics": "^1.5.0",
+    "@vercel/speed-insights": "^1.2.0",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.7.0",
