@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
+import { useToast } from "@/components/ui/toast"
 import { 
   ArrowLeft, 
   Printer, 
@@ -42,6 +43,7 @@ import { AddPartDialog } from "@/components/ui/add-part-dialog"
 import { AddLaborDialog } from "@/components/ui/add-labor-dialog"
 import { AddTravelDialog } from "@/components/ui/add-travel-dialog"
 import { PrintReport } from "@/components/ui/print-report"
+import { AddToCalendarButton } from "@/components/AddToCalendarButton"
 
 interface ServiceData {
   id: string;
@@ -125,7 +127,7 @@ export default function DetalhesServicoPage() {  const params = useParams()
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [isChangingStatus, setIsChangingStatus] = useState(false)
   
-  // Novos estados para histórico e fotos
+  
   const [showAddHistoryDialog, setShowAddHistoryDialog] = useState(false)
   const [newHistoryEntry, setNewHistoryEntry] = useState("")
   const [showAddPhotoDialog, setShowAddPhotoDialog] = useState(false)
@@ -134,16 +136,15 @@ export default function DetalhesServicoPage() {  const params = useParams()
   
   const [serviceData, setServiceData] = useState<ServiceData | null>(null);
 
+  const { showToast, ToastContainer } = useToast();
+
   const [loading, setLoading] = useState(true)
-  // Dados do serviço (em uma aplicação real, estes dados viriam de uma API)
   useEffect(() => {
-    // Adicione este código no useEffect de fetchServiceData na página de detalhes do serviço
-const fetchServiceData = async () => {
+  const fetchServiceData = async () => {
   setLoading(true)
   try {
-    // Adicione timeout para evitar espera infinita
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos de timeout
+    const timeoutId = setTimeout(() => controller.abort(), 10000); 
     
     const response = await fetch(`/api/services/${serviceId}`, {
       signal: controller.signal
@@ -272,10 +273,10 @@ const fetchServiceData = async () => {
       const updatedService = await response.json()
       console.log('Serviço atualizado:', updatedService)
       
-      // Atualizar o estado local
       setServiceData(prev => prev ? { ...prev, estado: newStatus } : null)
       
-      alert(`Estado alterado para: ${newStatus}`)
+      // alert(`Estado alterado para: ${newStatus}`)
+      showToast(`Estado alterado para ${getStatusName(newStatus)}`, 'success')
     } catch (error) {
       console.error("Erro ao alterar estado:", error)
       alert("Erro ao alterar estado do serviço")
@@ -283,6 +284,16 @@ const fetchServiceData = async () => {
       setIsChangingStatus(false)
     }
   }
+
+  const getStatusName = (status: string) => {
+  const statusMap: { [key: string]: string } = {
+    'pendente': 'Pendente',
+    'em_progresso': 'Em Progresso',
+    'aguarda_peca': 'Aguarda Peça',
+    'concluido': 'Concluído'
+  }
+  return statusMap[status] || status
+}
 
   const handleAddHistoryEntry = async () => {
     if (!newHistoryEntry.trim()) return
@@ -443,7 +454,14 @@ const fetchServiceData = async () => {
             >
               <Printer className="h-4 w-4" />
               <span className="hidden sm:inline">Imprimir</span>
-            </Button>            <DropdownMenu>
+            </Button>
+
+            <AddToCalendarButton 
+              servicoId={serviceId as string} 
+              servicoTitle={serviceData ? `${serviceData.equipamento.marca} ${serviceData.equipamento.modelo} - ${serviceData.cliente.nome}` : undefined}
+            />
+
+            <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" disabled={isChangingStatus}>
                   <MoreVertical className="h-4 w-4" />
@@ -603,16 +621,6 @@ const fetchServiceData = async () => {
                         <dt className="text-sm font-medium text-muted-foreground">Técnico Responsável</dt>
                         <dd className="text-base">{serviceData.tecnico || "Não atribuído"}</dd>
                       </div>
-                      <div>
-                        <dt className="text-sm font-medium text-muted-foreground">Garantia</dt>
-                        <dd className="text-base flex items-center gap-1">
-                          {serviceData.garantia ? 
-                            <CheckCircle2 className="h-4 w-4 text-green-500" /> : 
-                            <XCircle className="h-4 w-4 text-red-500" />
-                          }
-                          {serviceData.garantia ? `Sim` : "Não"}
-                        </dd>
-                      </div>
                     </dl>
                     
                     <dl className="space-y-4">
@@ -624,22 +632,14 @@ const fetchServiceData = async () => {
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-sm font-medium text-muted-foreground">Data do Diagnóstico</dt>
+                        <dt className="text-sm font-medium text-muted-foreground">Garantia</dt>
                         <dd className="text-base flex items-center gap-1">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        {serviceData.dataDiagnostico 
-                          ? new Date(serviceData.dataDiagnostico).toLocaleDateString('pt-PT')
-                          : "Não especificado"}
-                      </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-muted-foreground">Data da Reparação</dt>
-                        <dd className="text-base flex items-center gap-1">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        {serviceData.dataReparacao 
-                          ? new Date(serviceData.dataReparacao).toLocaleDateString('pt-PT')
-                          : "Não especificado"}
-                      </dd>
+                          {serviceData.garantia ? 
+                            <CheckCircle2 className="h-4 w-4 text-green-500" /> : 
+                            <XCircle className="h-4 w-4 text-red-500" />
+                          }
+                          {serviceData.garantia ? `Sim` : "Não"}
+                        </dd>
                       </div>
                       <div>
                         <dt className="text-sm font-medium text-muted-foreground">Estado</dt>
@@ -650,10 +650,16 @@ const fetchServiceData = async () => {
                     </dl>
                   </div>
                     <div className="mt-6">
-                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Notas Técnicas</h3>
-                    <p className="bg-muted/50 rounded-md p-3 whitespace-pre-wrap">
-                      {serviceData.notas || "Sem notas técnicas registadas."}
-                    </p>
+                    <h3 className="text-sm font-semibold text-slate-800 mb-4 pb-2 border-b border-slate-200">
+                      Notas Técnicas
+                    </h3>
+                    <div className="bg-slate-50/80 rounded-lg p-4 border border-slate-200/50">
+                      <p className="text-slate-600 whitespace-pre-wrap leading-7 font-medium">
+                        {serviceData.notas || (
+                          <span className="italic text-slate-400">Sem notas técnicas registadas.</span>
+                        )}
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>            </TabsContent>            {/* Aba de Histórico */}
@@ -842,7 +848,6 @@ const fetchServiceData = async () => {
                     </div>
                   )}
                   
-                  {/* Botão para adicionar foto */}
                   <div className="border-t pt-4 mt-6">
                     <Button 
                       onClick={() => setShowAddPhotoDialog(true)}
@@ -1114,6 +1119,8 @@ const fetchServiceData = async () => {
         cancelText="Não, Manter"
         variant="danger"
       />
+      
+      <ToastContainer />
     </div>
   )
 }

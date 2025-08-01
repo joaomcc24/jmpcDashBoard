@@ -383,7 +383,7 @@ export default function EditServicePage() {
                           </Button>
                         </div>
                         <Input
-                          placeholder="Digite o nome da marca..."
+                          placeholder="Insira o nome da marca..."
                           value={customBrand}
                           onChange={(e) => {
                             setCustomBrand(e.target.value)

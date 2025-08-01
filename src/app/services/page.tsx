@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { SERVICE_STATES, SERVICE_STATE_LABELS, SERVICE_STATE_COLORS } from "@/lib/constants"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 
+
 interface Service {
   id: string
   tipo: string
@@ -294,11 +295,11 @@ export default function ServicesPage() {
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-3">
                               <h3 className="text-lg font-semibold text-gray-900">{service.tipo}</h3>                              <Badge                                className={
-                                  (SERVICE_STATE_COLORS as any)[service.estado] || SERVICE_STATE_COLORS[SERVICE_STATES.PENDING]
+                                  (SERVICE_STATE_COLORS as Record<string, string>)[service.estado] || SERVICE_STATE_COLORS[SERVICE_STATES.PENDING]
                                 }
                               >
                                 <div className="flex items-center gap-1">                                  {getStateIcon(service.estado)}
-                                  {(SERVICE_STATE_LABELS as any)[service.estado] || service.estado}
+                                  {(SERVICE_STATE_LABELS as Record<string, string>)[service.estado] || service.estado}
                                 </div>
                               </Badge>
                               {service.garantia && (

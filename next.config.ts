@@ -31,24 +31,6 @@ const nextConfig: NextConfig = {
     
     return config
   },
-  // Remover headers CORS que estão a causar problemas com Cloudinary
-  // async headers() {
-  //   return [
-  //     {
-  //       source: '/(.*)',
-  //       headers: [
-  //         {
-  //           key: 'Cross-Origin-Embedder-Policy',
-  //           value: 'require-corp',
-  //         },
-  //         {
-  //           key: 'Cross-Origin-Opener-Policy',
-  //           value: 'same-origin',
-  //         },
-  //       ],
-  //     },
-  //   ]
-  // },
 };
 
 export default nextConfig;
