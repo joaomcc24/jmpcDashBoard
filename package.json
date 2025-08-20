@@ -30,7 +30,7 @@
     "@radix-ui/react-tabs": "^1.1.9",
     "@reduxjs/toolkit": "^2.7.0",
     "@types/bcryptjs": "^2.4.6",
-    "@types/next-auth": "^3.13.0",
+    "@types/next-auth": "^3.15.0",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
     "bcryptjs": "^3.0.2",
@@ -48,7 +48,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-redux": "^9.2.0",
-    "react-router-dom": "^7.5.1",
+    "react-router-dom": "^7.5.2",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
